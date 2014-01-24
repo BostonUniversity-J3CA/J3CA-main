@@ -1,14 +1,14 @@
-double getAileron()
+double getaileron()
 {
 return 0;
 }
 
-double getThrottle()
-{
-return 1;
-}
-
-double getLiftCoeff()
+double getthrottle()
 {
 return 2;
+}
+
+double getliftcoeff()
+{
+return 1;
 }

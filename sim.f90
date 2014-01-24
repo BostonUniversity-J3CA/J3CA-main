@@ -14,6 +14,23 @@ double precision :: theta=0, psidot=0, phi=0
 double precision :: throttle, aileron, Cl
 !lift and drag
 double precision :: L, D
+interface
+	real(c_double) function getAileron() bind(c)
+		!returns aileron from external c function
+		use iso_c_binding
+		implicit none
+	end function
+	real(c_double) function getThrottle() bind(c)
+		!returns throttle from external c function
+		use iso_c_binding
+		implicit none
+	end function
+	real(c_double) function getLiftCoeff() bind(c)
+		!returns commanded lift coefficient from external c function
+		use iso_c_binding
+		implicit none
+	end function
+end interface
 do while (time<endtime)
 throttle = getThrottle()
 aileron = getAileron()
@@ -29,21 +46,6 @@ phi = phi + (p + psidot * sin(theta))
 end do
 write(*,*) vAir
 contains
-double precision function getAileron()
-	implicit none
-	!returns aileron deflection
-	getAileron=0
-end function
-double precision function getThrottle()
-	implicit none
-	!returns throttle
-	getThrottle=1
-end function
-double precision function getLiftCoeff()
-	implicit none
-	!returns commanded lift coefficient
-	getLiftCoeff=1
-end function
 double precision function rollAileron(aileron)
 	implicit none
 	!returns roll moment as a function of aileron deflection 
