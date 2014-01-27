@@ -14,6 +14,9 @@ double precision :: theta=0, psidot=0, phi=0
 double precision :: throttle, aileron, Cl
 !lift and drag
 double precision :: L, D
+!aircraft velocity [u,v,w] in FAA, aircraft reference frame
+double precision, dimension(3) :: vinert = [0,0,0]
+!moments of inertia
 interface
 	real(c_double) function getAileron() bind(c)
 		!returns aileron from external c function
@@ -76,5 +79,43 @@ double precision function drag(Cl, vAir)
 	double precision :: rho = 1.275 !kg/m**3
 	double precision :: Cd0=.02, k=.001
 	drag = .5 * rho * vAir*vAir * (Cd0 + k * Cl**Cl)
+end function
+function inert2body(vector, rot)
+	!returns vector in body-centered co-ordinates, given rotation as theta, phi, psi
+	double precision, dimension(3) :: inert2body
+	double precision, dimension(3) :: rot
+	double precision, dimension(3) :: vector
+	double precision, dimension(3,3) :: transform
+	integer :: i,j
+	double precision :: cosR, cosP, cosY, sinR, sinP, sinY
+	cosR=cos(rot(1))
+	cosP=cos(rot(2)) 
+	cosY=cos(rot(3))
+	sinR=sin(rot(1))
+	sinP=sin(rot(2))
+	sinY=sin(rot(3))
+	transform = reshape( [cosP*cosY, -cosR*sinY+sinR*sinP*cosY, sinR*sinY+cosR*sinP*cosY, &
+		cosP*sinY, cosR*cosY+sinR*sinP*sinY, -sinR*cosY+cosR*sinP*sinY, &
+		-sinP, sinR*cosP, cosR*cosP], [3,3] )
+	inert2body = matmul(transform, vector)
+end function
+function body2inert(vector, rot)
+	!return transformed vector
+	double precision, dimension(3) :: body2inert
+	double precision, dimension(3) :: rot
+	double precision, dimension(3) :: vector
+	double precision, dimension(3,3) :: transform
+	integer :: i,j
+	double precision :: cosR, cosP, cosY, sinR, sinP, sinY
+	cosR=cos(rot(1))
+	cosP=cos(rot(2)) 
+	cosY=cos(rot(3))
+	sinR=sin(rot(1))
+	sinP=sin(rot(2))
+	sinY=sin(rot(3))
+	transform = reshape( [cosP*cosY, cosP*sinY, -sinP, &
+		-cosR*sinY+sinR*sinP*cosY, cosR*cosY+sinR*sinP*sinY, sinR*cosP, &
+		sinR*sinY+cosR*sinP*cosY, -sinR*cosY+cosR*sinP*sinY, cosR*cosP], [3,3] )
+	body2inert = matmul(transform, vector)
 end function
 end program simulate

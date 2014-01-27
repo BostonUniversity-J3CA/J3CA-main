@@ -1,3 +1,4 @@
+//control functions for use in simulation and in controlling aircraft
 double getaileron()
 {
 return 0;
