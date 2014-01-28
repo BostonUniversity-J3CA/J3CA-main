@@ -6,17 +6,22 @@ double precision, parameter :: g=9.80665
 double precision :: time=0, endtime=10, dt=.01
 !mass (kg)
 double precision :: m = 4
-!state variables (velocity through air, flight path angle, heading angle, roll rate)
-double precision :: vAir=1, gammaAir=0, psi=0, p=0
-!more state variables
-double precision :: theta=0, psidot=0, phi=0
 !control variables
 double precision :: throttle, aileron, Cl
 !lift and drag
 double precision :: L, D
 !aircraft velocity [u,v,w] in FAA, aircraft reference frame
-double precision, dimension(3) :: vinert = [0,0,0]
+double precision, dimension(3) :: vbody = [0,0,0]
+!euler angles
+double precision :: psi=0, phi=0, theta =0
+!euler rates
+double precision :: psidot=0, phidot=0, thetadot=0
+!body angular velocities (roll, pitch, yaw)
+double precision :: p, q, r
+!gravity vector
+double precision, dimension(3) :: gravity
 !moments of inertia
+double precision :: Ix=1, Iy=1, Iz=1, Ixz=1, Izx=1
 interface
 	real(c_double) function getAileron() bind(c)
 		!returns aileron from external c function
@@ -39,15 +44,17 @@ throttle = getThrottle()
 aileron = getAileron()
 Cl = getLiftCoeff()
 time = time + dt
-L = lift(Cl, vAir)
-D = drag(Cl, vAir)
-vAir = vAir + ((throttle-D)/m-g*sin(gammaAir)) * dt
-gammaAir = gammaAir + ( (L*cos(phi)-m*g*cos(gammaAir)) / (m*vAir) ) * dt
-p = p + (rollDamp(p) + rollAileron(aileron)) * dt
-psidot = ( L*sin(phi) / (m*vAir*cos(gammaAir)) ) 
-phi = phi + (p + psidot * sin(theta))
+gravity = inert2body([0d0,0d0,m*g],[psi,phi,theta])
+L = lift(Cl, vbody(1))
+D = drag(Cl, vbody(1))
+p = psidot-psidot*sin(theta)
+q = thetadot*cos(phi)+psidot*cos(theta)*sin(phi)
+r = psidot*cos(theta)*cos(phi)-thetadot*sin(phi)
+vbody(1)=vbody(1)+((throttle-D+gravity(1))/m-q*vbody(3)+r*vbody(2))*dt
+vbody(2)=vbody(2)+((gravity(2))/m-r*vbody(1)+p*vbody(3))*dt
+vbody(3)=vbody(3)+((-L+gravity(3))/m-p*vbody(2)+q*vbody(1))*dt
 end do
-write(*,*) vAir
+write(*,*) vbody
 contains
 double precision function rollAileron(aileron)
 	implicit none

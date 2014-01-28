@@ -6,7 +6,7 @@ return 0;
 
 double getthrottle()
 {
-return 2;
+return 6;
 }
 
 double getliftcoeff()
