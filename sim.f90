@@ -45,14 +45,26 @@ aileron = getAileron()
 Cl = getLiftCoeff()
 time = time + dt
 gravity = inert2body([0d0,0d0,m*g],[psi,phi,theta])
+!calculate forces
 L = lift(Cl, vbody(1))
 D = drag(Cl, vbody(1))
+!calculate angular velocities from Euler rates
 p = psidot-psidot*sin(theta)
 q = thetadot*cos(phi)+psidot*cos(theta)*sin(phi)
 r = psidot*cos(theta)*cos(phi)-thetadot*sin(phi)
-vbody(1)=vbody(1)+((throttle-D+gravity(1))/m-q*vbody(3)+r*vbody(2))*dt
-vbody(2)=vbody(2)+((gravity(2))/m-r*vbody(1)+p*vbody(3))*dt
-vbody(3)=vbody(3)+((-L+gravity(3))/m-p*vbody(2)+q*vbody(1))*dt
+!calculate acceleration, update veloctiy
+vbody(1) = vbody(1)+((throttle-D+gravity(1))/m-q*vbody(3)+r*vbody(2))*dt
+vbody(2) = vbody(2)+((gravity(2))/m-r*vbody(1)+p*vbody(3))*dt
+vbody(3) = vbody(3)+((-L+gravity(3))/m-p*vbody(2)+q*vbody(1))*dt
+!solve for pdot, qdot, rdot, update p, q, r
+!update Euler rates
+thetadot = q*cos(phi)-r*sin(phi)
+phidot = p + q*sin(phi)*tan(theta) + r*cos(phi)*tan(theta)
+psidot = (q*sin(phi) + r*cos(phi))/cos(theta)
+!update Euler angles
+theta = theta + thetadot*dt
+phi = phi + phidot*dt
+psi = psi + psidot*dt
 end do
 write(*,*) vbody
 contains
