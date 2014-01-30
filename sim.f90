@@ -12,6 +12,8 @@ double precision :: throttle, aileron, Cl
 double precision :: L, D
 !aircraft velocity [u,v,w] in FAA, aircraft reference frame
 double precision, dimension(3) :: vbody = [0,0,0]
+!aircraft velocity, inertial reference frame
+double precision, dimension(3) :: vinert = [0,0,0]
 !euler angles
 double precision :: psi=0, phi=0, theta =0
 !euler rates
@@ -22,6 +24,8 @@ double precision :: p, q, r
 double precision, dimension(3) :: gravity
 !moments of inertia
 double precision :: Ix=1, Iy=1, Iz=1, Ixz=1, Izx=1
+!distance
+double precision, dimension(3) :: distance
 interface
 	real(c_double) function getAileron() bind(c)
 		!returns aileron from external c function
@@ -37,6 +41,18 @@ interface
 		!returns commanded lift coefficient from external c function
 		use iso_c_binding
 		implicit none
+	end function
+	double precision function rollAileron(aileron)
+		double precision, intent(in) :: aileron
+	end function
+	double precision function rollDamp(p)
+		double precision, intent(in) :: p
+	end function
+	double precision function lift(Cl, vAir)
+		double precision, intent(in) :: Cl, vAir
+	end function
+	double precision function drag(Cl, vAir)
+		double precision, intent(in) :: Cl, vAir
 	end function
 end interface
 do while (time<endtime)
@@ -61,49 +77,23 @@ vbody(3) = vbody(3)+((-L+gravity(3))/m-p*vbody(2)+q*vbody(1))*dt
 thetadot = q*cos(phi)-r*sin(phi)
 phidot = p + q*sin(phi)*tan(theta) + r*cos(phi)*tan(theta)
 psidot = (q*sin(phi) + r*cos(phi))/cos(theta)
+!update distance
+vinert=body2inert(vbody,[psi,phi,theta])
+distance = distance + vinert*dt
 !update Euler angles
 theta = theta + thetadot*dt
 phi = phi + phidot*dt
 psi = psi + psidot*dt
 end do
 write(*,*) vbody
+write(*,*) distance
 contains
-double precision function rollAileron(aileron)
-	implicit none
-	!returns roll moment as a function of aileron deflection 
-	double precision, intent(in) :: aileron 
-	!constant of proportionality
-	double precision :: kAileron = 1
-	rollAileron = kAileron*aileron
-end function
-double precision function rollDamp(p)
-	!returns damping moment as a function of roll rate
-	implicit none
-	double precision, intent(in) :: p
-	!damping constant
-	double precision :: damping = 1
-	rollDamp = - damping * p
-end function
-double precision function lift(Cl, vAir)
-	!returns lift as a function of Cl and velocity 
-	implicit none
-	double precision, intent(in) :: Cl, vAir
-	double precision :: rho = 1.275 !kg/m**3
-	lift = .5 * rho * vAir*vAir * Cl
-end function
-double precision function drag(Cl, vAir)
-	!returns drag as a function of Cl and velocity 
-	implicit none
-	double precision, intent(in) :: Cl, vAir
-	double precision :: rho = 1.275 !kg/m**3
-	double precision :: Cd0=.02, k=.001
-	drag = .5 * rho * vAir*vAir * (Cd0 + k * Cl**Cl)
-end function
 function inert2body(vector, rot)
 	!returns vector in body-centered co-ordinates, given rotation as theta, phi, psi
+	implicit none
 	double precision, dimension(3) :: inert2body
-	double precision, dimension(3) :: rot
-	double precision, dimension(3) :: vector
+	double precision, dimension(3), intent(in) :: rot
+	double precision, dimension(3), intent(in) :: vector
 	double precision, dimension(3,3) :: transform
 	integer :: i,j
 	double precision :: cosR, cosP, cosY, sinR, sinP, sinY
@@ -120,9 +110,10 @@ function inert2body(vector, rot)
 end function
 function body2inert(vector, rot)
 	!return transformed vector
+	implicit none
 	double precision, dimension(3) :: body2inert
-	double precision, dimension(3) :: rot
-	double precision, dimension(3) :: vector
+	double precision, dimension(3), intent(in) :: rot
+	double precision, dimension(3), intent(in) :: vector
 	double precision, dimension(3,3) :: transform
 	integer :: i,j
 	double precision :: cosR, cosP, cosY, sinR, sinP, sinY
