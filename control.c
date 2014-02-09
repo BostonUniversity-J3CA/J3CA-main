@@ -1,3 +1,4 @@
+#include <stdio.h>
 //control functions for use in simulation and in controlling aircraft
 double getaileron()
 {
@@ -11,11 +12,13 @@ return 0;
 
 double getrudder()
 {
-return .1;
+return 0;
 }
 
-double getthrottle()
+double getthrottle(double velocity)
 {
-return 1;
+double throttle = 10 - velocity;
+printf("%f\n", throttle);
+return throttle;
 }
 
