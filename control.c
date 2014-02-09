@@ -4,12 +4,18 @@ double getaileron()
 return 0;
 }
 
-double getthrottle()
+double getelevator()
 {
-return 6;
+return 0;
 }
 
-double getliftcoeff()
+double getrudder()
+{
+return .1;
+}
+
+double getthrottle()
 {
 return 1;
 }
+
