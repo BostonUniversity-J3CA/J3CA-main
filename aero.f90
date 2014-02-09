@@ -14,6 +14,7 @@ double precision function rollDamp(p)
 	double precision :: damping = 1
 	rollDamp = - damping * p
 end function
+!double precision function elevator
 double precision function lift(Cl, vAir)
 	!returns lift as a function of Cl and velocity 
 	implicit none
