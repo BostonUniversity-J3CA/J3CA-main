@@ -31,11 +31,11 @@ double precision :: Ix=1, Iy=1, Iz=1, Ixz=1, Izx=1
 !distance
 double precision, dimension(3) :: distance = [0,0,0]
 interface
-	real(c_double) function getThrottle(velocity) bind(c)
+	real(c_float) function getThrottle(velocity) bind(c)
 		!returns throttle from external c function
 		use iso_c_binding
 		implicit none
-		real (c_double) :: velocity
+		real (c_float), intent(in) :: velocity
 	end function
 	real(c_double) function getAileron() bind(c)
 		!returns aileron from external c function
@@ -85,11 +85,10 @@ open(unit = 1, file = "sim.dat")
 do while (time<endtime)
 time = time + dt
 !get control inputs (eventually will only happen at 50 Hz)
-throttle = getThrottle(vbody(1))
+throttle = getThrottle(real(vbody(1)))
 aileron = getAileron()
 elevator = getElevator()
 rudder = getRudder()
-write(*,*) throttle, aileron, elevator, rudder
 !calculate angle of attack
 alpha = atan(vbody(3)/vbody(1))
 !calculate forces

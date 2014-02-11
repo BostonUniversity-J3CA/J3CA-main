@@ -1,5 +1,5 @@
-simulate : sim.o aero.o control.o
-	gcc -o simulate sim.o aero.o control.o -lgfortran
+run : sim.o aero.o control.o
+	gcc -o run sim.o aero.o control.o -lgfortran
 
 sim.o : sim.f90
 	gcc -c sim.f90
@@ -9,3 +9,6 @@ aero.o : aero.f90
 
 control.o : control.c
 	gcc -c control.c
+
+clean :
+	rm sim.o aero.o control.o

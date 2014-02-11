@@ -15,10 +15,15 @@ double getrudder()
 return 0;
 }
 
-double getthrottle(double velocity)
+float getthrottle(float velocity)
 {
-double throttle = 10 - velocity;
-printf("%f\n", throttle);
+float throttle = 10 - velocity;
+printf("%f\n", velocity);
 return throttle;
+}
+
+int test(int input)
+{
+return input+2;
 }
 
