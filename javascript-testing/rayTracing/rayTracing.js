@@ -5,6 +5,7 @@ $(document).ready(function(){
     var maxLeft        = $(window).width();
     var maxTop         = $(window).height();
     var aircraftRadius = 5;
+    var collisionPoint = [];
 
     // Cache frequently accessed elements
     var cx = $("#sphere_region")[0].getContext('2d');
@@ -47,7 +48,7 @@ $(document).ready(function(){
 		"radius":aircraftRadius
 	    },
 	    obstacleSphere);
-	alert(collision);
+	showCollision(collisionPoint);
 	return;
     });
     function detectCollision(aircraft,obstacle){
@@ -60,6 +61,8 @@ $(document).ready(function(){
 	 * lat, lon, alt, radius, prevLat, prevLon, prevAlt
 	 * - obstacle is an object with the obstacle's current GPS coordinates and bounding radius, in the properties:
 	 * lat, lon, alt, radius
+	 * If a collision is detected, the array collisionPoint
+	 * will be updated with the coordinates of the projected collision.
 	 */
 
 	// This creates a ray that goes beyond the obstacle 
@@ -75,9 +78,25 @@ $(document).ready(function(){
 	var c = obstacle.lon*obstacle.lon + obstacle.lat*obstacle.lat + obstacle.alt*obstacle.alt + aircraft.prevLon*aircraft.prevLon + aircraft.prevLat*aircraft.prevLat  + aircraft.prevAlt*aircraft.prevAlt  - 2*(obstacle.lon*aircraft.prevLon + obstacle.lat*aircraft.prevLat + obstacle.alt*aircraft.prevAlt) - ((obstacle.radius+aircraft.radius)*(obstacle.radius+aircraft.radius));
 	
 	var discriminant = Math.pow(b,2) - (4*a*c);
-	console.log(aircraft);
-	console.log(obstacle);
-	return discriminant > 0;
+	var collision = discriminant >= 0;
+	if ( collision ){
+	    var t = (-b-Math.sqrt(Math.pow(b,2)-4*a*c))/(2*a);
+	    collisionPoint[0] = aircraft.prevLon + t*dlon;
+	    collisionPoint[1] = aircraft.prevLat + t*dlat;
+	    collisionPoint[2] = aircraft.prevAlt + t*dalt;
+	    return true;
+	}
+	else {
+	    return false;
+	}
+    }
+    function showCollision(point){
+	cx.beginPath();
+	cx.rect(point[0]-5,point[1]-5,10,10);
+	cx.strokeStyle="#00f";
+	cx.stroke();
+	cx.closePath();
+	return;
     }
     function randomSphere(){
 	var radius = randNumber(minRadius,maxRadius);
