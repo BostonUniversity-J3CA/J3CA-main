@@ -1,13 +1,16 @@
 #include <stdio.h>
+#include "constants.h"
+
 //control functions for use in simulation and in controlling aircraft
 double getaileron()
 {
 return 0;
 }
 
-double getelevator()
+double getelevator(float pitch, float altitude)
 {
-return 0;
+float elevator = kpitch*pitch + kaltitude*altitude;
+return elevator;
 }
 
 double getrudder()
@@ -17,8 +20,7 @@ return 0;
 
 float getthrottle(float velocity)
 {
-float throttle = 10 - velocity;
-printf("%f\n", velocity);
+float throttle = kthrottle*(10 - velocity);
 return throttle;
 }
 

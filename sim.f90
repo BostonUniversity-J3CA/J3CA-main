@@ -27,7 +27,7 @@ double precision :: p, q, r, pdot, qdot, rdot
 !gravity vector
 double precision, dimension(3) :: gravity
 !moments of inertia
-double precision :: Ix=1, Iy=1, Iz=1, Ixz=1, Izx=1
+double precision :: Ix=1, Iy=1, Iz=1, Ixz=0, Izx=0
 !distance
 double precision, dimension(3) :: distance = [0,0,0]
 interface
@@ -42,10 +42,12 @@ interface
 		use iso_c_binding
 		implicit none
 	end function
-	real(c_double) function getElevator() bind(c)
+	real(c_double) function getElevator(pitch, altitude) bind(c)
 		!returns throttle from external c function
 		use iso_c_binding
 		implicit none
+		real (c_float), intent(in) :: pitch
+		real (c_float), intent(in) :: altitude
 	end function
 	real(c_double) function getRudder() bind(c)
 		!returns throttle from external c function
@@ -81,13 +83,14 @@ interface
 	end function
 end interface
 open(unit = 1, file = "sim.dat")
-1001 format(f6.2,T10,f6.2,T20,f6.2,T30,f6.2,T40,f6.2,T50,f6.2)
+1001 format(f6.2,T6,f6.2,T12,f6.2,T18,f6.2,T24,f6.2,T30,f6.2, T36, f6.2, T42, f6.2, T48, f6.2, T54, f6.2, T60, f6.2, T66, f6.2)
+
 do while (time<endtime)
 time = time + dt
 !get control inputs (eventually will only happen at 50 Hz)
 throttle = getThrottle(real(vbody(1)))
 aileron = getAileron()
-elevator = getElevator()
+elevator = getElevator(real(phi), real(vbody(1)))
 rudder = getRudder()
 !calculate angle of attack
 alpha = atan(vbody(3)/vbody(1))
@@ -127,7 +130,7 @@ distance = distance + vinert*dt
 theta = theta + thetadot*dt
 phi = phi + phidot*dt
 psi = psi + psidot*dt
-write(1,1001) vbody(1), vbody(2), vbody(3), distance(1), distance(2), distance(3)
+write(1,1001) vbody(1), vbody(2), vbody(3), distance(1), distance(2), distance(3), psi, theta, phi, p, q, r
 end do
 write(*,*) vbody
 write(*,*) distance

@@ -59,7 +59,7 @@ double precision function drag(Cl, vAir)
 	double precision, intent(in) :: Cl, vAir
 	double precision :: rho = 1.275 !kg/m**3
 	double precision :: Cd0=.02, k=.001
-	drag = .5 * rho * vAir*vAir * (Cd0 + k * Cl**Cl)
+	drag = .5 * rho * vAir*vAir * (Cd0 + k * Cl*Cl)
 end function
 double precision function liftCoeff(alpha)
 	!returns lift coefficient as a function of angle of attack
