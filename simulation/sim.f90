@@ -1,9 +1,9 @@
 program simulate
 implicit none
-!constants (m/s**2)
-double precision, parameter :: g=9.80665
+!constants (m/s**2), (unitless)
+double precision, parameter :: g=9.80665, pi=3.14159265359
 !timing variables (s)
-double precision :: time=0, endtime=10, dt=.01
+double precision :: time=0, endtime=10, dt=.001
 !mass (kg)
 double precision :: m = 2
 !angle of attack, coefficient of lift
@@ -83,14 +83,14 @@ interface
 	end function
 end interface
 open(unit = 1, file = "sim.dat")
-1001 format(f6.2,T6,f6.2,T12,f6.2,T18,f6.2,T24,f6.2,T30,f6.2, T36, f6.2, T42, f6.2, T48, f6.2, T54, f6.2, T60, f6.2, T66, f6.2)
+1001 format(f6.2,T10,f6.2,T20,f6.2,T30,f6.2,T40,f6.2,T50,f6.2, T60, f6.2, T70, f6.2, T80, f6.2)
 
 do while (time<endtime)
 time = time + dt
 !get control inputs (eventually will only happen at 50 Hz)
 throttle = getThrottle(real(vbody(1)))
 aileron = getAileron()
-elevator = getElevator(real(phi), real(vbody(1)))
+elevator = getElevator(real(phi), real(distance(3)))
 rudder = getRudder()
 !calculate angle of attack
 alpha = atan(vbody(3)/vbody(1))
@@ -99,7 +99,7 @@ Cl = liftCoeff(alpha)
 L = lift(Cl, vbody(1))
 D = drag(Cl, vbody(1))
 T = throttle
-gravity = inert2body([0d0,0d0,m*g],[psi,phi,theta])
+gravity = inert2body([0d0,0d0,m*g],[psi,theta,phi])
 !calculate angular velocities from Euler rates
 p = psidot-psidot*sin(theta)
 q = thetadot*cos(phi)+psidot*cos(theta)*sin(phi)
@@ -130,7 +130,7 @@ distance = distance + vinert*dt
 theta = theta + thetadot*dt
 phi = phi + phidot*dt
 psi = psi + psidot*dt
-write(1,1001) vbody(1), vbody(2), vbody(3), distance(1), distance(2), distance(3), p, q, r, psi, theta, phi
+write(1,1001) vbody(1), vbody(2), vbody(3), distance(1), distance(2), distance(3), alpha*180/pi, theta*180/pi
 end do
 write(*,*) vbody
 write(*,*) distance

@@ -20,7 +20,7 @@ return 0;
 
 float getthrottle(float velocity)
 {
-float throttle = kthrottle*(10 - velocity);
+float throttle = kthrottle*(velocity-10);
 return throttle;
 }
 
