@@ -5,7 +5,7 @@ double precision, parameter :: g=9.80665
 !timing variables (s)
 double precision :: time=0, endtime=10, dt=.01
 !mass (kg)
-double precision :: m = 4
+double precision :: m = 2
 !angle of attack, coefficient of lift
 double precision :: alpha = 0, Cl
 !control variables
@@ -27,7 +27,7 @@ double precision :: p, q, r, pdot, qdot, rdot
 !gravity vector
 double precision, dimension(3) :: gravity
 !moments of inertia
-double precision :: Ix=1, Iy=1, Iz=1, Ixz=0, Izx=0
+double precision :: Ix=1, Iy=2, Iz=2, Ixz=0, Izx=0
 !distance
 double precision, dimension(3) :: distance = [0,0,0]
 interface
@@ -124,13 +124,13 @@ thetadot = q*cos(phi)-r*sin(phi)
 phidot = p + q*sin(phi)*tan(theta) + r*cos(phi)*tan(theta)
 psidot = (q*sin(phi) + r*cos(phi))/cos(theta)
 !update distance
-vinert=body2inert(vbody,[psi,phi,theta])
+vinert=body2inert(vbody,[psi,theta,phi])
 distance = distance + vinert*dt
 !update Euler angles
 theta = theta + thetadot*dt
 phi = phi + phidot*dt
 psi = psi + psidot*dt
-write(1,1001) vbody(1), vbody(2), vbody(3), distance(1), distance(2), distance(3), psi, theta, phi, p, q, r
+write(1,1001) vbody(1), vbody(2), vbody(3), distance(1), distance(2), distance(3), p, q, r, psi, theta, phi
 end do
 write(*,*) vbody
 write(*,*) distance
