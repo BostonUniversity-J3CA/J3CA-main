@@ -31,16 +31,28 @@ $(document).ready(function(){
 	obstacleSphere = randomSphere();
 	drawSphere(obstacleSphere);
     });
+    $("#ray_box").on("mousemove",function(e){
+	if ( point2IsEmpty == false ){
+	    point2[0] = e.pageX;
+	    point2[1] = e.pageY;
+	    point2[2] = 0;
+	    drawCollisionScene();
+	}
+    });
     $("#ray_box").click(function(e){
 	if ( point1IsEmpty == false && point2IsEmpty == false ){
 	    point1IsEmpty = true;
 	    point2IsEmpty = true;
+	    $("#notifications").html("No points are selected");
+	    drawSphere(obstacleSphere);
+	    return;
 	}
 	if ( point1IsEmpty == true ){
 	    point1[0]     = e.pageX;
 	    point1[1]     = e.pageY;
 	    point1[2]     = 0;
 	    point1IsEmpty = false;
+	    $("#notifications").html("Point 1 is set. Please select another point");
 	    return;
 	}
 	else if ( point2IsEmpty == true ) {
@@ -48,8 +60,12 @@ $(document).ready(function(){
 	    point2[1]     = e.pageY;
 	    point2[2]     = 0;
 	    point2IsEmpty = false;
+	    $("#notifications").html("Point 1 is set. Point 2 is set");
 	}
-	
+	drawCollisionScene();
+	return;
+    });
+    function drawCollisionScene(){
 	// Draw current sphere
 	drawSphere(obstacleSphere);
 	// Calculate collision
@@ -68,7 +84,7 @@ $(document).ready(function(){
 	    showCollision(collisionPoint);
 	}
 	return;
-    });
+    }
     function detectCollision(aircraft,obstacle){
 	/**
 	 * This function will transfer over to C++
