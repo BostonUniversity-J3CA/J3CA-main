@@ -1,10 +1,10 @@
 $(document).ready(function(){
     // Default values, in imperial units
-    var minRadius      = 6;
-    var maxRadius      = 20;
+    var minRadius      = 20;
+    var maxRadius      = 40;
     var maxLeft        = $(window).width();
     var maxTop         = $(window).height();
-    var aircraftRadius = 5;
+    var aircraftRadius = 15;
     var collisionPoint = [];
 
     // Cache frequently accessed elements
@@ -14,6 +14,13 @@ $(document).ready(function(){
 	y : $("#sphere_region").position().top
     }
     var obstacleSphere = null;
+    // Variables (int[]) to store two points from clicks
+    var point1 = [];
+    var point2 = [];
+
+    // variables (bool) that tells which point has been filled
+    var point1IsEmpty = true;
+    var point2IsEmpty = true;
 
     // Set the width and height of the canvas
     $("#sphere_region").prop({
@@ -25,30 +32,41 @@ $(document).ready(function(){
 	drawSphere(obstacleSphere);
     });
     $("#ray_box").click(function(e){
-	var lon  = 2;
-	var lat  = e.pageY;
-	var alt  = 0;
-	// prevLon is the longitude of the plane last time the GPS
-	// coordinates were saved
-	var prevLon = 0;
-	var prevLat = e.pageY; // Assume latitude and altitude don't change
-	var prevAlt = 0;
+	if ( point1IsEmpty == false && point2IsEmpty == false ){
+	    point1IsEmpty = true;
+	    point2IsEmpty = true;
+	}
+	if ( point1IsEmpty == true ){
+	    point1[0]     = e.pageX;
+	    point1[1]     = e.pageY;
+	    point1[2]     = 0;
+	    point1IsEmpty = false;
+	    return;
+	}
+	else if ( point2IsEmpty == true ) {
+	    point2[0]     = e.pageX;
+	    point2[1]     = e.pageY;
+	    point2[2]     = 0;
+	    point2IsEmpty = false;
+	}
 	
 	// Draw current sphere
 	drawSphere(obstacleSphere);
 	// Calculate collision
 	var collision = detectCollision(
 	    {
-		"lat":lat,
-		"lon":lon,
-		"alt":alt,
-		"prevLat":prevLat,
-		"prevLon":prevLon,
-		"prevAlt":prevAlt,
+		"lat":point2[1],
+		"lon":point2[0],
+		"alt":point2[2],
+		"prevLat":point1[1],
+		"prevLon":point1[0],
+		"prevAlt":point1[2],
 		"radius":aircraftRadius
 	    },
 	    obstacleSphere);
-	showCollision(collisionPoint);
+	if ( collision ){
+	    showCollision(collisionPoint);
+	}
 	return;
     });
     function detectCollision(aircraft,obstacle){
@@ -70,17 +88,30 @@ $(document).ready(function(){
 	var dlat = aircraft.lat - aircraft.prevLat;
 	var dalt = aircraft.alt - aircraft.prevAlt;
 
-	drawRay(aircraft.prevLon,maxLeft,aircraft.prevLat,aircraft.lat);
+	drawRay(aircraft.prevLon,aircraft.lon,aircraft.prevLat,aircraft.lat);
 	// Calculate whether a collision occurs. Ray tracing calculation is provided by:
 	// www.ccs.neu.edu/home/fell/CSU540/programs/RayTracingFormulas.htm
+
 	var a = dlon*dlon + dlat*dlat + dalt*dalt;
 	var b = 2*dlon*(aircraft.prevLon-obstacle.lon) + 2*dlat*(aircraft.prevLat-obstacle.lat) + 2*dalt*(aircraft.prevAlt - obstacle.alt);
-	var c = obstacle.lon*obstacle.lon + obstacle.lat*obstacle.lat + obstacle.alt*obstacle.alt + aircraft.prevLon*aircraft.prevLon + aircraft.prevLat*aircraft.prevLat  + aircraft.prevAlt*aircraft.prevAlt  - 2*(obstacle.lon*aircraft.prevLon + obstacle.lat*aircraft.prevLat + obstacle.alt*aircraft.prevAlt) - ((obstacle.radius+aircraft.radius)*(obstacle.radius+aircraft.radius));
-	
+	var c = Math.pow(aircraft.prevLon-obstacle.lon,2) + Math.pow(aircraft.prevLat-obstacle.lat,2) + Math.pow(aircraft.prevAlt-obstacle.alt,2)-Math.pow(aircraft.radius+obstacle.radius,2);
+
+
 	var discriminant = Math.pow(b,2) - (4*a*c);
+	console.log([a,b,c]);
+	console.log(discriminant);
 	var collision = discriminant >= 0;
 	if ( collision ){
-	    var t = (-b-Math.sqrt(Math.pow(b,2)-4*a*c))/(2*a);
+	    var t1 = (-b-Math.sqrt(Math.pow(b,2)-4*a*c))/(2*a);
+	    var t2 = (-b+Math.sqrt(Math.pow(b,2)-4*a*c))/(2*a);
+	    if ( t1 > 0 ){
+		var t = t1;
+	    }
+	    else {
+		if ( t2 > 0 ){
+		    var t = t2;
+		}
+	    }
 	    collisionPoint[0] = aircraft.prevLon + t*dlon;
 	    collisionPoint[1] = aircraft.prevLat + t*dlat;
 	    collisionPoint[2] = aircraft.prevAlt + t*dalt;
@@ -117,9 +148,14 @@ $(document).ready(function(){
 	return;
     }
     function drawRay(x,x2,y,y2){
+	function f(t){
+	    var m = ((y2-y)/(x2-x));
+	    var b = m*-1*x+y;
+	    return m*t + b;
+	}
 	cx.beginPath();
 	cx.moveTo(x,y);
-	cx.lineTo(x2,y2);
+	cx.lineTo(x2*100,f(x2*100));
 	cx.strokeStyle="#f00";
 	cx.stroke();
 	cx.closePath();
