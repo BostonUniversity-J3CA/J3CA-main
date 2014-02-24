@@ -1,6 +1,5 @@
 These files are to test the ability of the collision detection by ray tracing. Open rayTracing.html (along with the other files) in a web browser to test it out. 
 
-How it works:
+The first version only tested the collision detection in 1D (along the x-axis only). This version will test the detection in both the x and the y directions. 
 
-1) Click the "Random Sphere" button to make a random obstacle
-2) Click anywhere below the "Random Sphere" button to make a ray. The computer will alert either TRUE or FALSE depending on if a collision occurred or not.
+The actual test page will need to be changed such that draw a line through the circle is easy. Right now it's very difficult but possible.
