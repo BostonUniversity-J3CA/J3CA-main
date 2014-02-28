@@ -1,13 +1,17 @@
 program simulate
 implicit none
-!constants (m/s**2), (unitless)
-double precision, parameter :: g=9.80665, pi=3.14159265359
+!gravity (m/s**2) 
+double precision, parameter :: g=9.80665D0
+double precision, parameter :: pi=3.14159265358979323846264338D0
+!pi
 !timing variables (s)
-double precision :: time=0, endtime=10, dt=.001
+double precision :: time=0D0, endtime=10D0, dt=.001D0
+!rate for control loop (s)
+double precision :: update = .001D0
 !mass (kg)
-double precision :: m = 2
+double precision :: m = 2D0
 !angle of attack, coefficient of lift
-double precision :: alpha = 0, Cl
+double precision :: alpha = 0D0, Cl
 !control variables
 double precision :: throttle, aileron, elevator, rudder
 !Forces (thrust, lift, and drag)
@@ -15,21 +19,25 @@ double precision :: T, L, D
 !Moments (roll, pitch, yaw)
 double precision :: mL, mM, mN
 !aircraft velocity [u,v,w] in FAA, aircraft reference frame
-double precision, dimension(3) :: vbody = [10,0,0]
+double precision, dimension(3) :: vbody = [10D0,0D0,0D0]
 !aircraft velocity, inertial reference frame
-double precision, dimension(3) :: vinert = [0,0,0]
+double precision, dimension(3) :: vinert = [0D0,0D0,0D0]
 !euler angles
-double precision :: psi=0, phi=0, theta =0
+double precision :: psi=0D0, phi=0D0, theta = 0D0
 !euler rates
-double precision :: psidot=0, phidot=0, thetadot=0
+double precision :: psidot=0D0, phidot=0D0, thetadot=0D0
 !body angular velocities (roll, pitch, yaw) and acceleration
 double precision :: p, q, r, pdot, qdot, rdot
 !gravity vector
 double precision, dimension(3) :: gravity
 !moments of inertia
-double precision :: Ix=1, Iy=2, Iz=2, Ixz=0, Izx=0
+double precision :: Ix=1D0, Iy=2D0, Iz=2D0, Ixz=0D0, Izx=0D0
 !distance
-double precision, dimension(3) :: distance = [0,0,0]
+double precision, dimension(3) :: distance = [0D0,0D0,1D0]
+!wind
+double precision, dimension(3) :: wind = [0D0, 0D0, 0D0]
+!random number
+double precision :: rand
 interface
 	real(c_float) function getThrottle(velocity) bind(c)
 		!returns throttle from external c function
@@ -53,6 +61,8 @@ interface
 		!returns throttle from external c function
 		use iso_c_binding
 		implicit none
+	end function
+	double precision function normal()
 	end function
 	double precision function rollAileron(aileron)
 		double precision, intent(in) :: aileron
@@ -84,14 +94,17 @@ interface
 end interface
 open(unit = 1, file = "sim.dat")
 1001 format(f6.2,T10,f6.2,T20,f6.2,T30,f6.2,T40,f6.2,T50,f6.2, T60, f6.2, T70, f6.2, T80, f6.2)
-
+rand = normal()
+write(*,*) rand
 do while (time<endtime)
 time = time + dt
-!get control inputs (eventually will only happen at 50 Hz)
+if (nint(time/update) == floor(time/update)) then
+!get control inputs
 throttle = getThrottle(real(vbody(1)))
 aileron = getAileron()
 elevator = getElevator(real(phi), real(distance(3)))
 rudder = getRudder()
+end if
 !calculate angle of attack
 alpha = atan(vbody(3)/vbody(1))
 !calculate forces
@@ -124,7 +137,7 @@ thetadot = q*cos(phi)-r*sin(phi)
 phidot = p + q*sin(phi)*tan(theta) + r*cos(phi)*tan(theta)
 psidot = (q*sin(phi) + r*cos(phi))/cos(theta)
 !update distance
-vinert=body2inert(vbody,[psi,theta,phi])
+vinert=wind + body2inert(vbody,[psi,theta,phi])
 distance = distance + vinert*dt
 !update Euler angles
 theta = theta + thetadot*dt

@@ -1,3 +1,3 @@
 #define kthrottle -20
-#define kpitch .3
-#define kaltitude 0
+#define kpitch .4
+#define kaltitude .0200
