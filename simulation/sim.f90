@@ -62,8 +62,10 @@ interface
 		use iso_c_binding
 		implicit none
 	end function
-	double precision function normal()
+	real function nrand()
 	end function
+	subroutine init_random_seed()
+	end subroutine
 	double precision function rollAileron(aileron)
 		double precision, intent(in) :: aileron
 	end function
@@ -94,8 +96,8 @@ interface
 end interface
 open(unit = 1, file = "sim.dat")
 1001 format(f6.2,T10,f6.2,T20,f6.2,T30,f6.2,T40,f6.2,T50,f6.2, T60, f6.2, T70, f6.2, T80, f6.2)
-rand = normal()
-write(*,*) rand
+call init_random_seed()
+write(*,*) nrand(), nrand(), nrand()
 do while (time<endtime)
 time = time + dt
 if (nint(time/update) == floor(time/update)) then
