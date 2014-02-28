@@ -1,5 +1,5 @@
 $(document).ready(function(){
-    // Default values, in imperial units
+    // Default values, currently in pixels - will change to metric once the test is complete
     var minRadius      = 20;
     var maxRadius      = 40;
     var maxLeft        = $(window).width();
