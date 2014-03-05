@@ -1,0 +1,163 @@
+var zoom         = 2; // This factor will make the displays actually see-able
+var pxPerMeter   = $(window).width()/100; // Window width divided by 100 meters. The length of our flight area
+var flightDistance = 100; // meters
+var ourcraft     = null;
+var obstacles    = [];
+// These variables are used for drawing to the screen
+var cx           = null;
+var canvasWidth  = 0;
+var canvasHeight = 0;
+// Animation variables
+var playAnimation = true;
+// Constants
+var NUM_OBSTACLES = 20;
+var DETECTION_DISTANCE  = 10;
+function Aircraft(){
+    var self     = this;
+    var radius   = 2*zoom; // The length of the aircraft is 1 meter but I'm applying a factor of safety of 2
+    var position = {
+	x : 0,  // Will be in pixels converted from meters using the factor pxPerMeter defined above
+	y : 300, // Arbitrary for now, just as an example
+	z : 0
+    }
+    var origPosition = {
+	x : 0,
+	y : 300,
+	z : 0
+    }
+    var velocity = {
+	x : 12 * pxPerMeter, // Meters per second converted to pixels per second
+	y : 0, 
+	z : 0
+    }
+    this.color   = "#00f";
+    this.setVelocity = function(x,y,z){
+	velocity.x = x;
+	velocity.y = y;
+	velocity.z = z;
+    }
+    this.setPosition = function(x,y,z){
+	position.x = x;
+	position.y = y;
+	position.z = z;
+    }
+    this.move        = function(){
+	position.x += velocity.x/60; // Velocity is in pixels per second, dividing by 60 will give pixels per frame
+	position.y += velocity.y/60;
+	position.z += velocity.z/60;
+	return position;
+    }
+    this.getPosition = function(){
+	return position;
+    }
+    this.getRadius   = function(){
+	return radius;
+    }
+    this.setRandomValues = function(){
+	position = {
+	    x : rand(0,canvasWidth),
+	    y : rand(0,canvasHeight),
+	    z : 0
+	};
+	origPosition = {
+	    x : position.x,
+	    y : position.y,
+	    z : position.z
+	}
+	velocity = {
+	    x : rand(-10,30),
+	    y : rand(-10,30),
+	    z : 0
+	};
+	radius = rand(2,5);
+	return self;
+    }
+    this.getOrigPosition = function(){
+	return origPosition;
+    }
+    this.getVelocity = function(){
+	return velocity;
+    }
+    return self;
+}
+function rand(min,max){
+    return min + Math.floor(Math.random()*(max-min+1));
+}
+function update(){
+    cx.clearRect(0,0,canvasWidth,canvasHeight);
+    var position = ourcraft.move();
+    cx.beginPath();
+    cx.arc(Math.round(position.x),Math.round(position.y),ourcraft.getRadius(),0,2*Math.PI,false);
+    cx.strokeStyle="#000";
+    cx.stroke();
+    cx.closePath();
+    for ( var i = 0, n = obstacles.length; i < n; i++ ){
+	cx.beginPath();
+	position = obstacles[i].move();
+	cx.arc(Math.round(position.x),Math.round(position.y),obstacles[i].getRadius(),0,2*Math.PI,false);
+	cx.strokeStyle=willCollide(ourcraft,obstacles[i])==true?(obstacles[i].color="#f00"):(obstacles[i].color="#00f");
+	cx.stroke();
+	cx.closePath();
+    }
+    if ( playAnimation == true ){
+	window.webkitRequestAnimationFrame(update);
+    }
+    return;
+}
+function willCollide(obj1,obj2){
+    var R  = (obj1.getRadius()+obj2.getRadius()); // Assume our aircraft is a point, and give the other aircraft a radius of our aircraft radius plus
+    // the obstacle's aircraft radius
+    var vel1 = obj1.getVelocity();
+    var vel2 = obj2.getVelocity();
+    var pos1 = obj1.getPosition();
+    var pos2 = obj2.getPosition();
+    
+    var dv   = [vel1.x-vel2.x,vel1.y-vel2.y,vel1.z-vel2.z];
+    var dp   = [pos1.x-pos2.x,pos1.y-pos2.y,pos1.z-pos2.z];
+
+    var times= [];
+    for ( var i = 0, n = dv.length; i < n; i++ ){
+	if ( dv[i] == 0 ){
+	    times[i] = 0;
+	}
+	else {
+	    times[i] = ( R - dp[i] ) / dv[i];
+	}
+    }
+    if ( times[0] >= 0 ){
+	if ( times[1] >= 0 ){
+	    if ( times[2] >= 0 ){
+		if ( Math.abs(times[0]-times[1]) < 1 ){
+		    return true;
+		}
+	    }
+	}
+    }
+    return false;
+}
+function toggleAnim(){
+    playAnimation = !playAnimation;
+    animate();
+    return;
+}
+function animate(){
+    if ( playAnimation ){
+	window.webkitRequestAnimationFrame(update);
+    }
+    return;
+}
+$(document).ready(function(){
+    cx           = $("#football_field");
+    cx.attr({
+	width : $(window).width(),
+	height: $(window).height()*0.9
+    });
+    cx           = cx[0].getContext('2d');
+    canvasWidth  = $(window).width();
+    canvasHeight = $(window).height();
+    ourcraft = new Aircraft();
+    for ( var i = 0; i < NUM_OBSTACLES; i++ ){
+	obstacles[i] = new Aircraft().setRandomValues();
+    }
+    animate();
+}).click(toggleAnim);
