@@ -11,7 +11,9 @@ var canvasHeight = 0;
 var playAnimation = true;
 // Constants
 var NUM_OBSTACLES = 20;
-var DETECTION_DISTANCE  = 10;
+var DETECTION_DISTANCE  = 600;
+var MIN_TIME_DIFF       = 5;
+var IGNORE_TIME         = -0.5;
 function Aircraft(){
     var self     = this;
     var radius   = 2*zoom; // The length of the aircraft is 1 meter but I'm applying a factor of safety of 2
@@ -86,16 +88,20 @@ function rand(min,max){
 function update(){
     cx.clearRect(0,0,canvasWidth,canvasHeight);
     var position = ourcraft.move();
+    var color    = "#00f";
     cx.beginPath();
     cx.arc(Math.round(position.x),Math.round(position.y),ourcraft.getRadius(),0,2*Math.PI,false);
     cx.strokeStyle="#000";
     cx.stroke();
     cx.closePath();
     for ( var i = 0, n = obstacles.length; i < n; i++ ){
-	cx.beginPath();
 	position = obstacles[i].move();
+	color = willCollide(ourcraft,obstacles[i])?(color="#f00"):(color="#00f");
+	obstacles[i].color = color;
+
+	cx.beginPath();
 	cx.arc(Math.round(position.x),Math.round(position.y),obstacles[i].getRadius(),0,2*Math.PI,false);
-	cx.strokeStyle=willCollide(ourcraft,obstacles[i])==true?(obstacles[i].color="#f00"):(obstacles[i].color="#00f");
+	cx.strokeStyle=obstacles[i].color
 	cx.stroke();
 	cx.closePath();
     }
@@ -124,12 +130,16 @@ function willCollide(obj1,obj2){
 	    times[i] = ( R - dp[i] ) / dv[i];
 	}
     }
-    if ( times[0] >= 0 ){
-	if ( times[1] >= 0 ){
-	    if ( times[2] >= 0 ){
-		if ( Math.abs(times[0]-times[1]) < 1 ){
-		    return true;
-		}
+    /*if ( Math.sqrt(times[0]^2+times[1]^2) < DETECTION_DISTANCE ){
+	return true;
+    }*/
+    var timediff = Math.abs(times[0]-times[1]);
+    var dd       = Math.sqrt( Math.pow(dp[0],2) + Math.pow(dp[1],2) );
+    //$("#time_display").html(timediff+"<br/>"+dd);
+    if ( timediff < MIN_TIME_DIFF ){
+	if ( times[0] > IGNORE_TIME && times[1] > IGNORE_TIME ){
+	    if ( dd < DETECTION_DISTANCE ){
+		return true;		    
 	    }
 	}
     }
