@@ -1,0 +1,4 @@
+Mass is 2 kg
+Elevator effectiveness is as follows:
+	S = 13 in * 1.25 in = 16.25 in^2 = .01048385 m^2
+	L = 1/2 rho * v^2 * 
