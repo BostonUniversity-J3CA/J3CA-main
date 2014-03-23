@@ -1,35 +1,92 @@
-﻿function calculateT(bx,by,bz,aircraft,m,dx,dy,dz,R){
-    var t = bx*dx + by*dy + bz*dz - bx*m - by*m - bz*m - dx*aircraft.prevLon - dy*aircraft.prevLat - dz*aircraft.prevAlt + m*aircraft.prevLon 
-	+ m*aircraft.prevLat + m*aircraft.prevAlt + Math.sqrt(Math.pow(R,2)*Math.pow(dx,2) - 2*Math.pow(R,2)*dx*m + Math.pow(R,2)*Math.pow(dy,2) 
-        - 2*Math.pow(R,2)*dy*m + Math.pow(R,2)*Math.pow(dz,2) - 2*Math.pow(R,2)*dz*m + Math.pow(R,2)*Math.pow(m,2) + Math.pow(R,2)*Math.pow(m,2) 
-        + Math.pow(R,2)*Math.pow(m,2) - Math.pow(bx,2)*Math.pow(dy,2) + 2*Math.pow(bx,2)*dy*m - Math.pow(bx,2)*Math.pow(dz,2) 
-        + 2*Math.pow(bx,2)*dz*m - Math.pow(bx,2)*Math.pow(m,2) - Math.pow(bx,2)*Math.pow(m,2) + 2*bx*by*dx*dy - 2*bx*by*dx*m - 2*bx*by*dy*m 
-        + 2*bx*by*m*m + 2*bx*bz*dx*dz - 2*bx*bz*dx*m - 2*bx*bz*dz*m + 2*bx*bz*m*m - 2*bx*dx*dy*aircraft.prevLat - 2*bx*dx*dz*aircraft.prevAlt 
-        + 2*bx*dx*m*aircraft.prevLat + 2*bx*dx*m*aircraft.prevAlt + 2*bx*Math.pow(dy,2)*aircraft.prevLon + 2*bx*dy*m*aircraft.prevLat 
-        - 4*bx*dy*m*aircraft.prevLon + 2*bx*Math.pow(dz,2)*aircraft.prevLon + 2*bx*dz*m*aircraft.prevAlt - 4*bx*dz*m*aircraft.prevLon 
-        - 2*bx*m*m*aircraft.prevLat - 2*bx*m*m*aircraft.prevAlt + 2*bx*Math.pow(m,2)*aircraft.prevLon + 2*bx*Math.pow(m,2)*aircraft.prevLon 
-        - Math.pow(by,2)*Math.pow(dx,2) + 2*Math.pow(by,2)*dx*m - Math.pow(by,2)*Math.pow(dz,2) + 2*Math.pow(by,2)*dz*m 
-        - Math.pow(by,2)*Math.pow(m,2) - Math.pow(by,2)*Math.pow(m,2) + 2*by*bz*dy*dz - 2*by*bz*dy*m - 2*by*bz*dz*m + 2*by*bz*m*m 
-        + 2*by*Math.pow(dx,2)*aircraft.prevLat - 2*by*dx*dy*aircraft.prevLon - 4*by*dx*m*aircraft.prevLat + 2*by*dx*m*aircraft.prevLon 
-        - 2*by*dy*dz*aircraft.prevAlt + 2*by*dy*m*aircraft.prevLon + 2*by*dy*m*aircraft.prevAlt + 2*by*Math.pow(dz,2)*aircraft.prevLat 
-        + 2*by*dz*m*aircraft.prevAlt - 4*by*dz*m*aircraft.prevLat + 2*by*Math.pow(m,2)*aircraft.prevLat - 2*by*m*m*aircraft.prevLon 
-        - 2*by*m*m*aircraft.prevAlt + 2*by*Math.pow(m,2)*aircraft.prevLat - Math.pow(bz,2)*Math.pow(dx,2) + 2*Math.pow(bz,2)*dx*m 
-        - Math.pow(bz,2)*Math.pow(dy,2) + 2*Math.pow(bz,2)*dy*m - Math.pow(bz,2)*Math.pow(m,2) - Math.pow(bz,2)*Math.pow(m,2) 
-        + 2*bz*Math.pow(dx,2)*aircraft.prevAlt - 2*bz*dx*dz*aircraft.prevLon - 4*bz*dx*m*aircraft.prevAlt + 2*bz*dx*m*aircraft.prevLon 
-        + 2*bz*Math.pow(dy,2)*aircraft.prevAlt - 2*bz*dy*dz*aircraft.prevLat - 4*bz*dy*m*aircraft.prevAlt + 2*bz*dy*m*aircraft.prevLat 
-        + 2*bz*dz*m*aircraft.prevLon + 2*bz*dz*m*aircraft.prevLat + 2*bz*Math.pow(m,2)*aircraft.prevAlt - 2*bz*m*m*aircraft.prevLon 
-        + 2*bz*Math.pow(m,2)*aircraft.prevAlt - 2*bz*m*m*aircraft.prevLat - Math.pow(dx,2)*Math.pow(aircraft.prevLat,2) 
-        - Math.pow(dx,2)*Math.pow(aircraft.prevAlt,2) + 2*dx*dy*aircraft.prevLon*aircraft.prevLat + 2*dx*dz*aircraft.prevLon*aircraft.prevAlt 
-        + 2*dx*m*Math.pow(aircraft.prevLat,2) + 2*dx*m*Math.pow(aircraft.prevAlt,2) - 2*dx*m*aircraft.prevLon*aircraft.prevLat 
-        - 2*dx*m*aircraft.prevLon*aircraft.prevAlt - Math.pow(dy,2)*Math.pow(aircraft.prevLon,2) - Math.pow(dy,2)*Math.pow(aircraft.prevAlt,2) 
-        + 2*dy*dz*aircraft.prevLat*aircraft.prevAlt - 2*dy*m*aircraft.prevLon*aircraft.prevLat + 2*dy*m*Math.pow(aircraft.prevLon,2) 
-        + 2*dy*m*Math.pow(aircraft.prevAlt,2) - 2*dy*m*aircraft.prevLat*aircraft.prevAlt - Math.pow(dz,2)*Math.pow(aircraft.prevLon,2) 
-        - Math.pow(dz,2)*Math.pow(aircraft.prevLat,2) - 2*dz*m*aircraft.prevLon*aircraft.prevAlt - 2*dz*m*aircraft.prevLat*aircraft.prevAlt 
-        + 2*dz*m*Math.pow(aircraft.prevLon,2) + 2*dz*m*Math.pow(aircraft.prevLat,2) - Math.pow(m,2)*Math.pow(aircraft.prevLat,2) 
-        - Math.pow(m,2)*Math.pow(aircraft.prevAlt,2) + 2*m*m*aircraft.prevLon*aircraft.prevLat + 2*m*m*aircraft.prevLon*aircraft.prevAlt 
-        - Math.pow(m,2)*Math.pow(aircraft.prevLon,2) - Math.pow(m,2)*Math.pow(aircraft.prevAlt,2) + 2*m*m*aircraft.prevLat*aircraft.prevAlt 
-        - Math.pow(m,2)*Math.pow(aircraft.prevLon,2) - Math.pow(m,2)*Math.pow(aircraft.prevLat,2))) / (Math.pow(dx,2) 
-        - 2*dx*m + Math.pow(dy,2) - 2*dy*m + Math.pow(dz,2) - 2*dz*m + Math.pow(m,2) + Math.pow(m,2) + Math.pow(m,2);
-													     
-        return t;
+﻿function normalize(vector){
+    var length = Math.sqrt(Math.pow(vector.x,2)+Math.pow(vector.y,2)+Math.pow(vector.z,2));
+    var vec    = {
+	x : vector.x / length,
+	y : vector.y / length,
+	z : vector.z / length
+    }
+    return vec;
 }
+function sphere_calculateCollision(aircraft,obstacle){
+    var pos1  = aircraft.getPosition();
+    var dir1  = normalize(aircraft.getVelocity());
+    var orig1 = aircraft.getOrigPosition();
+    var obs1  = obstacle.getPosition();
+    var R     = aircraft.getRadius() + obstacle.getRadius();
+
+    var ray   = subtract(pos1,orig1);
+    var cylpt = subtract(obs1,pos1);
+    var cross1 = cross(cylpt,ray);
+    var cross2 = cross(dir1,ray);
+
+    var d = dot(ray,ray);
+    var a = dot(cross2,cross2);
+    var b = 2 * dot(cross2,cross1);
+    var c = dot(cross1,cross1) - (R*R*d);
+    console.log(cross2,ray,dir1);
+    /*if ( a == 0 ){
+	// Calculate ray-circle intersection
+	return detectCollision(aircraft,obstacle);
+    }*/
+
+    var t  = (-b+Math.sqrt(Math.pow(b,2)-4*a*c))/(2*a);
+    var mt = (-b-Math.sqrt(Math.pow(b,2)-4*a*c))/(2*a);
+
+    if ( t <= 0 ){
+	if ( mt > 0 ){
+	    return mt;
+	}
+	else {
+	    return 0;
+	}
+    }
+    else {
+	return t;
+    }
+    return 0;
+}
+function subtract(a,b){
+    var vector = {};
+    for ( var i in a ){
+	vector[i] = a[i]-b[i];
+    }
+    return vector;
+}
+function cross(a,b){
+    return {
+	x:a.y*b.z - b.y*a.z,
+	y:b.x*a.z - a.x*b.z,
+	z:a.x*b.y - a.y*b.x
+    };
+}
+function dot(a,b){
+    var sum = 0;
+    for ( var i in a ){
+	sum += a[i]*b[i];
+    }
+    return sum;
+}
+/*function calculateT(aircraft,obstacle){
+    var pos1 = aircraft.getPosition();
+    var pos2 = obstacle.getPosition();
+    var vel1 = aircraft.getVelocity();
+    var vel2 = obstacle.getVelocity();
+    var r    = aircraft.getRadius() + obstacle.getRadius();
+
+    var P1x = pos1.x;
+    var P1y = pos1.y;
+    var P1z = pos1.z;
+    var V1x = vel1.x;
+    var V1y = vel1.y;
+    var V1z = vel1.z;
+
+    var P2x = pos2.x;
+    var P2y = pos2.y;
+    var P2z = pos2.z;
+    var V2x = vel2.x;
+    var V2y = vel2.y;
+    var V2z = vel2.z;
+
+    var t = Math.sqrt(V2y*V1z - V1y*V2z + (8*Math.pow(P1x,2)*Math.pow(V2x,2)*V1y*V2y*V1z*V2z - 4*Math.pow(P1x,2)*Math.pow(V2x,2)*Math.pow(V1y,2)*Math.pow(V2z,2) - 4*Math.pow(P1x,2)*Math.pow(V2x,2)*Math.pow(V2y,2)*Math.pow(V1z,2) + 8*P1x*P2x*Math.pow(V2x,2)*Math.pow(V1y,2)*Math.pow(V2z,2) - 16*P1x*P2x*Math.pow(V2x,2)*V1y*V2y*V1z*V2z + 8*P1x*P2x*Math.pow(V2x,2)*Math.pow(V2y,2)*Math.pow(V1z,2) + 8*P1x*P1y*V1x*Math.pow(V2x,2)*V1y*Math.pow(V2z,2) - 8*P1x*P1y*V1x*Math.pow(V2x,2)*V2y*V1z*V2z - 8*P1x*P1y*Math.pow(V2x,3)*V1y*V1z*V2z + 8*P1x*P1y*Math.pow(V2x,3)*V2y*Math.pow(V1z,2) - 8*P1x*P2y*V1x*Math.pow(V2x,2)*V1y*Math.pow(V2z,2) + 8*P1x*P2y*V1x*Math.pow(V2x,2)*V2y*V1z*V2z + 8*P1x*P2y*Math.pow(V2x,3)*V1y*V1z*V2z - 8*P1x*P2y*Math.pow(V2x,3)*V2y*Math.pow(V1z,2) - 8*P1x*P1z*V1x*Math.pow(V2x,2)*V1y*V2y*V2z + 8*P1x*P1z*V1x*Math.pow(V2x,2)*Math.pow(V2y,2)*V1z + 8*P1x*P1z*Math.pow(V2x,3)*Math.pow(V1y,2)*V2z - 8*P1x*P1z*Math.pow(V2x,3)*V1y*V2y*V1z + 8*P1x*P2z*V1x*Math.pow(V2x,2)*V1y*V2y*V2z - 8*P1x*P2z*V1x*Math.pow(V2x,2)*Math.pow(V2y,2)*V1z - 8*P1x*P2z*Math.pow(V2x,3)*Math.pow(V1y,2)*V2z + 8*P1x*P2z*Math.pow(V2x,3)*V1y*V2y*V1z + 4*P1x*V1x*V1y*Math.pow(V2y,2)*V2z + 4*P1x*V1x*V1y*Math.pow(V2z,3) - 4*P1x*V1x*Math.pow(V2y,3)*V1z - 4*P1x*V1x*V2y*V1z*Math.pow(V2z,2) - 4*P1x*V2x*Math.pow(V1y,2)*V2y*V2z + 4*P1x*V2x*V1y*Math.pow(V2y,2)*V1z - 4*P1x*V2x*V1y*V1z*Math.pow(V2z,2) + 4*P1x*V2x*V2y*Math.pow(V1z,2)*V2z - 4*Math.pow(P2x,2)*Math.pow(V2x,2)*Math.pow(V1y,2)*Math.pow(V2z,2) + 8*Math.pow(P2x,2)*Math.pow(V2x,2)*V1y*V2y*V1z*V2z - 4*Math.pow(P2x,2)*Math.pow(V2x,2)*Math.pow(V2y,2)*Math.pow(V1z,2) - 8*P2x*P1y*V1x*Math.pow(V2x,2)*V1y*Math.pow(V2z,2) + 8*P2x*P1y*V1x*Math.pow(V2x,2)*V2y*V1z*V2z + 8*P2x*P1y*Math.pow(V2x,3)*V1y*V1z*V2z - 8*P2x*P1y*Math.pow(V2x,3)*V2y*Math.pow(V1z,2) + 8*P2x*P2y*V1x*Math.pow(V2x,2)*V1y*Math.pow(V2z,2) - 8*P2x*P2y*V1x*Math.pow(V2x,2)*V2y*V1z*V2z - 8*P2x*P2y*Math.pow(V2x,3)*V1y*V1z*V2z + 8*P2x*P2y*Math.pow(V2x,3)*V2y*Math.pow(V1z,2) + 8*P2x*P1z*V1x*Math.pow(V2x,2)*V1y*V2y*V2z - 8*P2x*P1z*V1x*Math.pow(V2x,2)*Math.pow(V2y,2)*V1z - 8*P2x*P1z*Math.pow(V2x,3)*Math.pow(V1y,2)*V2z + 8*P2x*P1z*Math.pow(V2x,3)*V1y*V2y*V1z - 8*P2x*P2z*V1x*Math.pow(V2x,2)*V1y*V2y*V2z + 8*P2x*P2z*V1x*Math.pow(V2x,2)*Math.pow(V2y,2)*V1z + 8*P2x*P2z*Math.pow(V2x,3)*Math.pow(V1y,2)*V2z - 8*P2x*P2z*Math.pow(V2x,3)*V1y*V2y*V1z - 4*P2x*V1x*V1y*Math.pow(V2y,2)*V2z - 4*P2x*V1x*V1y*Math.pow(V2z,3) + 4*P2x*V1x*Math.pow(V2y,3)*V1z + 4*P2x*V1x*V2y*V1z*Math.pow(V2z,2) + 4*P2x*V2x*Math.pow(V1y,2)*V2y*V2z - 4*P2x*V2x*V1y*Math.pow(V2y,2)*V1z + 4*P2x*V2x*V1y*V1z*Math.pow(V2z,2) - 4*P2x*V2x*V2y*Math.pow(V1z,2)*V2z - 4*Math.pow(P1y,2)*Math.pow(V1x,2)*Math.pow(V2x,2)*Math.pow(V2z,2) + 8*Math.pow(P1y,2)*V1x*Math.pow(V2x,3)*V1z*V2z - 4*Math.pow(P1y,2)*Math.pow(V2x,4)*Math.pow(V1z,2) + 8*P1y*P2y*Math.pow(V1x,2)*Math.pow(V2x,2)*Math.pow(V2z,2) - 16*P1y*P2y*V1x*Math.pow(V2x,3)*V1z*V2z + 8*P1y*P2y*Math.pow(V2x,4)*Math.pow(V1z,2) + 8*P1y*P1z*Math.pow(V1x,2)*Math.pow(V2x,2)*V2y*V2z - 8*P1y*P1z*V1x*Math.pow(V2x,3)*V1y*V2z - 8*P1y*P1z*V1x*Math.pow(V2x,3)*V2y*V1z + 8*P1y*P1z*Math.pow(V2x,4)*V1y*V1z - 8*P1y*P2z*Math.pow(V1x,2)*Math.pow(V2x,2)*V2y*V2z + 8*P1y*P2z*V1x*Math.pow(V2x,3)*V1y*V2z + 8*P1y*P2z*V1x*Math.pow(V2x,3)*V2y*V1z - 8*P1y*P2z*Math.pow(V2x,4)*V1y*V1z - 4*P1y*Math.pow(V1x,2)*Math.pow(V2y,2)*V2z - 4*P1y*Math.pow(V1x,2)*Math.pow(V2z,3) + 4*P1y*V1x*V2x*V1y*V2y*V2z + 4*P1y*V1x*V2x*Math.pow(V2y,2)*V1z + 8*P1y*V1x*V2x*V1z*Math.pow(V2z,2) - 4*P1y*Math.pow(V2x,2)*V1y*V2y*V1z - 4*P1y*Math.pow(V2x,2)*Math.pow(V1z,2)*V2z - 4*Math.pow(P2y,2)*Math.pow(V1x,2)*Math.pow(V2x,2)*Math.pow(V2z,2) + 8*Math.pow(P2y,2)*V1x*Math.pow(V2x,3)*V1z*V2z - 4*Math.pow(P2y,2)*Math.pow(V2x,4)*Math.pow(V1z,2) - 8*P2y*P1z*Math.pow(V1x,2)*Math.pow(V2x,2)*V2y*V2z + 8*P2y*P1z*V1x*Math.pow(V2x,3)*V1y*V2z + 8*P2y*P1z*V1x*Math.pow(V2x,3)*V2y*V1z - 8*P2y*P1z*Math.pow(V2x,4)*V1y*V1z + 8*P2y*P2z*Math.pow(V1x,2)*Math.pow(V2x,2)*V2y*V2z - 8*P2y*P2z*V1x*Math.pow(V2x,3)*V1y*V2z - 8*P2y*P2z*V1x*Math.pow(V2x,3)*V2y*V1z + 8*P2y*P2z*Math.pow(V2x,4)*V1y*V1z + 4*P2y*Math.pow(V1x,2)*Math.pow(V2y,2)*V2z + 4*P2y*Math.pow(V1x,2)*Math.pow(V2z,3) - 4*P2y*V1x*V2x*V1y*V2y*V2z - 4*P2y*V1x*V2x*Math.pow(V2y,2)*V1z - 8*P2y*V1x*V2x*V1z*Math.pow(V2z,2) + 4*P2y*Math.pow(V2x,2)*V1y*V2y*V1z + 4*P2y*Math.pow(V2x,2)*Math.pow(V1z,2)*V2z - 4*Math.pow(P1z,2)*Math.pow(V1x,2)*Math.pow(V2x,2)*Math.pow(V2y,2) + 8*Math.pow(P1z,2)*V1x*Math.pow(V2x,3)*V1y*V2y - 4*Math.pow(P1z,2)*Math.pow(V2x,4)*Math.pow(V1y,2) + 8*P1z*P2z*Math.pow(V1x,2)*Math.pow(V2x,2)*Math.pow(V2y,2) - 16*P1z*P2z*V1x*Math.pow(V2x,3)*V1y*V2y + 8*P1z*P2z*Math.pow(V2x,4)*Math.pow(V1y,2) + 4*P1z*Math.pow(V1x,2)*Math.pow(V2y,3) + 4*P1z*Math.pow(V1x,2)*V2y*Math.pow(V2z,2) - 8*P1z*V1x*V2x*V1y*Math.pow(V2y,2) - 4*P1z*V1x*V2x*V1y*Math.pow(V2z,2) - 4*P1z*V1x*V2x*V2y*V1z*V2z + 4*P1z*Math.pow(V2x,2)*Math.pow(V1y,2)*V2y + 4*P1z*Math.pow(V2x,2)*V1y*V1z*V2z - 4*Math.pow(P2z,2)*Math.pow(V1x,2)*Math.pow(V2x,2)*Math.pow(V2y,2) + 8*Math.pow(P2z,2)*V1x*Math.pow(V2x,3)*V1y*V2y - 4*Math.pow(P2z,2)*Math.pow(V2x,4)*Math.pow(V1y,2) - 4*P2z*Math.pow(V1x,2)*Math.pow(V2y,3) - 4*P2z*Math.pow(V1x,2)*V2y*Math.pow(V2z,2) + 8*P2z*V1x*V2x*V1y*Math.pow(V2y,2) + 4*P2z*V1x*V2x*V1y*Math.pow(V2z,2) + 4*P2z*V1x*V2x*V2y*V1z*V2z - 4*P2z*Math.pow(V2x,2)*Math.pow(V1y,2)*V2y - 4*P2z*Math.pow(V2x,2)*V1y*V1z*V2z + 4*Math.pow(V1x,2)*Math.pow(V2y,2)*Math.pow(r,2) + 4*Math.pow(V1x,2)*Math.pow(V2z,2)*Math.pow(r,2) - 8*V1x*V2x*V1y*V2y*Math.pow(r,2) - 8*V1x*V2x*V1z*V2z*Math.pow(r,2) + 4*Math.pow(V2x,2)*Math.pow(V1y,2)*Math.pow(r,2) + 4*Math.pow(V2x,2)*Math.pow(V1z,2)*Math.pow(r,2) + Math.pow(V1y,2)*Math.pow(V2z,2) - 2*V1y*V2y*V1z*V2z + Math.pow(V2y,2)*Math.pow(V1z,2)) - 2*P1x*V1x*Math.pow(V2y,2) + 2*P2x*V1x*Math.pow(V2y,2) - 2*P1x*V1x*Math.pow(V2z,2) - 2*P1y*Math.pow(V2x,2)*V1y + 2*P2x*V1x*Math.pow(V2z,2) + 2*P2y*Math.pow(V2x,2)*V1y - 2*P1z*Math.pow(V2x,2)*V1z + 2*P2z*Math.pow(V2x,2)*V1z + 2*P1x*V2x*V1y*V2y + 2*P1y*V1x*V2x*V2y - 2*P2x*V2x*V1y*V2y - 2*P2y*V1x*V2x*V2y + 2*P1x*V2x*V1z*V2z + 2*P1z*V1x*V2x*V2z - 2*P2x*V2x*V1z*V2z - 2*P2z*V1x*V2x*V2z)/(2*(Math.pow(V1x,2)*Math.pow(V2y,2) + Math.pow(V1x,2)*Math.pow(V2z,2) - 2*V1x*V2x*V1y*V2y - 2*V1x*V2x*V1z*V2z + Math.pow(V2x,2)*Math.pow(V1y,2) + Math.pow(V2x,2)*Math.pow(V1z,2)));
+    return t;
+}*/

@@ -121,201 +121,23 @@ function update(){
     return;
 }
 function willCollide(obj1,obj2){
-    var vel1 = obj1.getVelocity();
-    var vel2 = obj2.getVelocity();
-    var pos1 = obj1.getPosition();
-    var pos2 = obj2.getPosition();
-    var t    = 0;
-    var s    = 0;
-    var code1= 0;
-    var code2= 0;
+    var t = sphere_calculateCollision(obj1,obj2);
+    var vel1  = obj1.getVelocity();
+    var pos1  = obj1.getOrigPosition();
 
-    if ( vel1.x != 0 ){
-	code1 += 1;
-    }
-    if ( vel1.y != 0 ){
-	code1 += 2;
-    }
-    if ( vel1.z != 0 ){
-	code1 += 4;
-    }
-    if ( vel2.x != 0 ){
-	code2 += 1;
-    }
-    if ( vel2.y != 0 ){
-	code2 += 2;
-    }
-    if ( vel2.z != 0 ){
-	code2 += 4;
-    }
-    if ( code2 == 0 ){
-	// If the obstacle is stationary
-	if ( code1 > 0 ){
-	    if ( code1 % 2 == 1 ){
-		// If the code is odd, then the velocity in x is always not zero
-		t = ( pos2.x - pos1.x ) / vel1.x;
-		s = 0;
-	    }
-	    else if ( code1 == 4 ){
-		t = ( pos2.z - pos1.z ) / vel1.z;
-		s = 0;
-	    }
-	    else {
-		t = ( pos2.y - pos1.y ) / vel1.y;
-		s = 0;
-	    }
-	}
-	else {
-	    return false; // In this scenario, neither of the aircraft are moving....so no collision is remotely possible
-	}
-    }
-    else if ( code1 == 0 ){
-	// If our aircraft is stationary but another aircraft is moving
-	if ( code2 > 0 ){
-	    if ( code2 % 2 == 1 ){
-		// If the code is odd
-		t = 0;
-		s = ( pos1.x - pos2.x ) / vel2.x;
-	    }
-	    else if ( code2 == 4 ){
-		// If only the z velocity is non-zero
-		t = 0;
-		s = ( pos1.z - pos2.z ) / vel2.z;
-	    }
-	    else {
-		// If only the y velocity is non-zero
-		t = 0;
-		s = ( pos1.y - pos2.y ) / vel2.y;
-	    }
-	}
-	else {
-	    return false; // Both aircraft are not moving
-	}
-    }
-    else {
-	if ( code1 == code2 ){
-	    if ( code1 % 2 == 1 ){
-		t = ( pos2.x - pos1.x ) / ( vel1.x - vel2.x );
-	    }
-	    else if ( code1 == 4 ){
-		t = ( pos2.z - pos1.z ) / ( vel1.z - vel2.z );
-	    }
-	    else{
-		t = ( pos2.y - pos1.y ) / ( vel1.y - vel2.y );
-	    }
-	}
-	else {
-	    var ourPos = [0,0]; 
-	    var ourVel = [0,0];
-	    var obsPos = [0,0];
-	    var obsVel = [0,0];
-	    var pos1IsSet = false;
-	    var pos2IsSet = false;
-	    // Check for a velocity in the x-direction
-	    if ( code1 % 2 == 1 ){
-		if ( pos1IsSet == false ){
-		    ourPos[0] = pos1.x;
-		    ourVel[0] = vel1.x;
-		    pos1IsSet = true;
-		}
-		else {
-		    ourPos[1] = pos1.x;
-		    ourVel[1] = vel1.x;
-		}
-	    }
-	    if ( code1 == 4 ){
-		// There's a velocity in the z-direction
-		if ( pos1IsSet == false ){
-		    ourPos[0] = pos1.z;
-		    ourVel[0] = vel1.z;
-		    pos1IsSet = true;
-		}
-		else {
-		    ourPos[1] = pos1.z;
-		    ourVel[1] = vel1.z;
-		}
-	    }
-	    else {
-		// There's a velocity in the y-direction
-		if ( pos1IsSet == false ){
-		    ourPos[0] = pos1.y;
-		    ourVel[0] = vel1.y;
-		    pos1IsSet = true;
-		}
-		else {
-		    ourPos[1] = pos1.y;
-		    ourVel[1] = vel1.y;
-		}
-	    }
-	    // Now compare our aircraft's position and velocity to that of the obstacle to solve for t and s
-	    if ( code2 % 2 == 1 ){
-		// The obstacle has a velocity in the x-direction
-		if ( pos2IsSet == false ){
-		    obsPos[0] = pos2.x;
-		    obsVel[0] = vel2.x;
-		    pos2IsSet = true;
-		}
-		else {
-		    obsPos[1] = pos2.x;
-		    obsVel[1] = vel2.x;
-		}
-	    }
-	    if ( code2 == 4 ){
-		// The obstacle has a velocity in the z-direction
-		if ( pos2IsSet == false ){
-		    obsPos[0] = pos2.z;
-		    obsVel[0] = vel2.z;
-		    pos2IsSet = true;
-		}
-		else {
-		    obsPos[1] = pos2.z;
-		    obsVel[1] = vel2.z;
-		}
-	    }
-	    else {
-		// The obstacle has a velocity in the x-direction
-		if ( pos2IsSet == false ){
-		    obsPos[0] = pos2.y;
-		    obsVel[0] = vel2.y;
-		    pos2IsSet = true;
-		}
-		else {
-		    obsPos[1] = pos2.y;
-		    obsVel[1] = vel2.y;
-		}
-	    }
-	    if ( ourVel[0] != 0 && ourVel[1] != 0 && obsVel[0] != 0 && obsVel[1] != 0 ){
-		t = solveForTWithS(ourPos,ourVel,obsPos,obsVel,obj1.getRadius(),obj2.getRadius());
-		s = ( ourPos[1] - obsPos[1] + ( t * ourVel[1] ) ) / ourVel[1];
-	    }
-	    else if ( obsVel[0] != 0 && obsVel[1] != 0 ){
-		// This function still needs to be written
-		s = ( obsPos[1] - ourPos[1] ) / obsVel[1];
-		if ( ourVel[0] != 0 ){
-		    t = ( obsPos[0] - ourPos[0] + ( s * obsVel[0] ) ) / ( ourVel[0] );
-		}
-		else {
-		    t = ( obsPos[0] - ourPos[0] + ( s * obsVel[0] ) ) / ( ourVel[1] );
-		}
-	    }
-	}
-    }
-    $("#time_display").html(t.toFixed(0)+","+s.toFixed(0)+","+(t-s).toFixed(0));
-    if ( Math.abs(t - s) < MAX_CLOSENESS ) {
-	cx.beginPath();
-	cx.arc(t*vel1.x-s*vel2.x,t*vel1.y-s*vel2.y,20,0,Math.PI*2,true);
-	cx.strokeStyle="#0f0";
-	cx.stroke();
-	cx.closePath();
+    var x = pos1.x + vel1.x*t;
+    var y = pos1.y + vel1.y*t;
+
+    cx.beginPath();
+    cx.rect(x-5,y-5,10,10);
+    cx.strokeStyle="#0f0";
+    cx.stroke();
+    cx.closePath();
+    $("#time_display").html(t+"<br/>"+x+"<br/>"+y);
+    if ( t > 0 ){
 	return true;
     }
     return false;
-}
-function solveForTWithS(pos1,pos2,vel1,vel2,radius1,radius2){
-    var t = ( pos2[0]-pos1[0] ) / vel1[1];
-    t    += vel2[0] * ( pos1[1] - pos2[1] ) / Math.pow(vel1[1],2);
-    t    /= 1 - ( vel2[1] * vel2[0] / vel1[1] );
-    return t;
 }
 function toggleAnim(){
     playAnimation = !playAnimation;

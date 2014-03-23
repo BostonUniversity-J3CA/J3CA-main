@@ -31,11 +31,11 @@
 	    var t1 = (-b-Math.sqrt(Math.pow(b,2)-4*a*c))/(2*a);
 	    var t2 = (-b+Math.sqrt(Math.pow(b,2)-4*a*c))/(2*a);
 	    if ( t1 > 0 ){
-		var t = t1;
+		return t = t1;
 	    }
 	    else {
 		if ( t2 > 0 ){
-		    var t = t2;
+		    return t = t2;
 		}
 	    }
 	    collisionPoint[0] = aircraft.prevLon + t*dlon;
@@ -47,7 +47,7 @@
 	    return false;
 	}
     }
-function detectCollision_2(aircraft,obstacle){
+function predictCollision(aircraft,obstacle){
     /* This function works similarily to detectCollision().
      * However, this function can PREDICT if a collision will occur,
      * as well as if a collision is currently occurring.
@@ -62,6 +62,13 @@ function detectCollision_2(aircraft,obstacle){
     var m  = Math.sqrt(Math.pow(obstacle.lon-bx,2)+Math.pow(obstacle.lat-by,2)+Math.pow(obstacle.alt-bz,2));
     
     var t  = calculateT(bx,by,bz,aircraft,m,dx,dy,dz,R);
-    $("#time_display").html(t);
+    var data = "<tr>";
+    data += "<td>"+aircraft.lon+"</td><td>"+aircraft.lat+"</td><td>"+aircraft.alt+"</td>";
+    data += "<td>"+obstacle.lon+"</td><td>"+obstacle.lat+"</td><td>"+obstacle.alt+"</td>";
+    data += "<td>"+t+"</td></tr>";
+    $("#data").append(data);
+    if ( Math.abs(t) < MAX_CLOSENESS ){
+	return true;
+    }
     return false;
 }
