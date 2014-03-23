@@ -121,11 +121,15 @@ function update(){
     return;
 }
 function willCollide(obj1,obj2){
-    var t = sphere_calculateCollision(obj1,obj2);
+    var point = [0,0,0];
+    var t = detectCollisionPoint(obj1,obj2,point);
     var vel1  = obj1.getVelocity();
     var pos1  = obj1.getOrigPosition();
-
-    var x = pos1.x + vel1.x*t;
+    
+    if ( t == true ){
+	console.log(point);
+    }
+    /*var x = pos1.x + vel1.x*t;
     var y = pos1.y + vel1.y*t;
 
     cx.beginPath();
@@ -133,7 +137,7 @@ function willCollide(obj1,obj2){
     cx.strokeStyle="#0f0";
     cx.stroke();
     cx.closePath();
-    $("#time_display").html(t+"<br/>"+x+"<br/>"+y);
+    $("#time_display").html(t+"<br/>"+x+"<br/>"+y);*/
     if ( t > 0 ){
 	return true;
     }
