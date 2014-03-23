@@ -10,10 +10,9 @@ var canvasHeight = 0;
 // Animation variables
 var playAnimation = true;
 // Constants
-var NUM_OBSTACLES = 20;
-var DETECTION_DISTANCE  = 600;
-var MIN_TIME_DIFF       = 5;
-var IGNORE_TIME         = -0.5;
+var NUM_OBSTACLES = 1;
+var MAX_CLOSENESS = 3; // The difference in seconds between the s and t constants in the collision formula. If s = t, then the obstacle and our
+// aircraft will be at the same exact point in space at that time.
 function Aircraft(){
     var self     = this;
     var radius   = 2*zoom; // The length of the aircraft is 1 meter but I'm applying a factor of safety of 2
@@ -32,6 +31,11 @@ function Aircraft(){
 	y : 0, 
 	z : 0
     }
+    var prevPosition = {
+	x : 0,
+	y : 0,
+	z : 0
+    }
     this.color   = "#00f";
     this.setVelocity = function(x,y,z){
 	velocity.x = x;
@@ -44,6 +48,9 @@ function Aircraft(){
 	position.z = z;
     }
     this.move        = function(){
+	prevPosition.x = position.x;
+	prevPosition.y = position.y;
+	prevPosition.z = position.z;
 	position.x += velocity.x/60; // Velocity is in pixels per second, dividing by 60 will give pixels per frame
 	position.y += velocity.y/60;
 	position.z += velocity.z/60;
@@ -80,6 +87,9 @@ function Aircraft(){
     this.getVelocity = function(){
 	return velocity;
     }
+    this.getPrevPosition = function(){
+	return prevPosition;
+    }
     return self;
 }
 function rand(min,max){
@@ -111,37 +121,25 @@ function update(){
     return;
 }
 function willCollide(obj1,obj2){
-    var R  = (obj1.getRadius()+obj2.getRadius()); // Assume our aircraft is a point, and give the other aircraft a radius of our aircraft radius plus
-    // the obstacle's aircraft radius
-    var vel1 = obj1.getVelocity();
-    var vel2 = obj2.getVelocity();
-    var pos1 = obj1.getPosition();
-    var pos2 = obj2.getPosition();
+    var point = [0,0,0];
+    var t = detectCollisionPoint(obj1,obj2,point);
+    var vel1  = obj1.getVelocity();
+    var pos1  = obj1.getOrigPosition();
     
-    var dv   = [vel1.x-vel2.x,vel1.y-vel2.y,vel1.z-vel2.z];
-    var dp   = [pos1.x-pos2.x,pos1.y-pos2.y,pos1.z-pos2.z];
-
-    var times= [];
-    for ( var i = 0, n = dv.length; i < n; i++ ){
-	if ( dv[i] == 0 ){
-	    times[i] = 0;
-	}
-	else {
-	    times[i] = ( R - dp[i] ) / dv[i];
-	}
+    if ( t == true ){
+	console.log(point);
     }
-    /*if ( Math.sqrt(times[0]^2+times[1]^2) < DETECTION_DISTANCE ){
+    /*var x = pos1.x + vel1.x*t;
+    var y = pos1.y + vel1.y*t;
+
+    cx.beginPath();
+    cx.rect(x-5,y-5,10,10);
+    cx.strokeStyle="#0f0";
+    cx.stroke();
+    cx.closePath();
+    $("#time_display").html(t+"<br/>"+x+"<br/>"+y);*/
+    if ( t > 0 ){
 	return true;
-    }*/
-    var timediff = Math.abs(times[0]-times[1]);
-    var dd       = Math.sqrt( Math.pow(dp[0],2) + Math.pow(dp[1],2) );
-    //$("#time_display").html(timediff+"<br/>"+dd);
-    if ( timediff < MIN_TIME_DIFF ){
-	if ( times[0] > IGNORE_TIME && times[1] > IGNORE_TIME ){
-	    if ( dd < DETECTION_DISTANCE ){
-		return true;		    
-	    }
-	}
     }
     return false;
 }
