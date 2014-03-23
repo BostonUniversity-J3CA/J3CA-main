@@ -23,7 +23,7 @@ double precision, dimension(3) :: vbody = [10D0,0D0,0D0]
 !aircraft velocity, inertial reference frame
 double precision, dimension(3) :: vinert = [0D0,0D0,0D0]
 !euler angles
-double precision :: psi=0D0, phi=0D0, theta = 0D0
+double precision :: psi=0.0D0, phi=0D0, theta = 0D0
 !euler rates
 double precision :: psidot=0D0, phidot=0D0, thetadot=0D0
 !body angular velocities (roll, pitch, yaw) and acceleration
@@ -33,7 +33,7 @@ double precision, dimension(3) :: gravity
 !moments of inertia
 double precision :: Ix=1D0, Iy=2D0, Iz=2D0, Ixz=0D0, Izx=0D0
 !distance
-double precision, dimension(3) :: distance = [0D0,0D0,1D0]
+double precision, dimension(3) :: distance = [0D0,1D0,0D0]
 !wind
 double precision, dimension(3) :: wind = [0D0, 0D0, 0D0]
 !random number
@@ -50,17 +50,18 @@ interface
 		use iso_c_binding
 		implicit none
 	end function
-	real(c_double) function getElevator(pitch, altitude) bind(c)
+	real(c_double) function getElevator(pitch, pitchrate) bind(c)
 		!returns throttle from external c function
 		use iso_c_binding
 		implicit none
 		real (c_float), intent(in) :: pitch
-		real (c_float), intent(in) :: altitude
+		real (c_float), intent(in) :: pitchrate
 	end function
-	real(c_double) function getRudder() bind(c)
+	real(c_double) function getRudder(offyaw) bind(c)
 		!returns throttle from external c function
 		use iso_c_binding
 		implicit none
+		real (c_float), intent(in) :: offyaw
 	end function
 	real function nrand()
 	end function
@@ -95,18 +96,18 @@ interface
 	end function
 end interface
 open(unit = 1, file = "sim.dat")
-1001 format(f6.2,T10,f6.2,T20,f6.2,T30,f6.2,T40,f6.2,T50,f6.2, T60, f6.2, T70, f6.2, T80, f6.2)
+1001 format(f6.2,T10,f6.2,T20,f6.2,T30,f6.2,T40,f6.2,T50,f6.2, T60, f6.2, T70, f6.2, T80, f6.2, T90, f6.2, T100, f6.2)
 call init_random_seed()
 write(*,*) nrand(), nrand(), nrand()
 do while (time<endtime)
 time = time + dt
-if (nint(time/update) == floor(time/update)) then
+!if (nint(time/update) == floor(time/update)) then
 !get control inputs
-throttle = getThrottle(real(vbody(1)))
+throttle = getThrottle(real(vinert(1)))
 aileron = getAileron()
-elevator = getElevator(real(phi), real(distance(3)))
-rudder = getRudder()
-end if
+elevator = getElevator(real(phi), real(phidot))
+rudder = getRudder(real(psi))
+!end if
 !calculate angle of attack
 alpha = atan(vbody(3)/vbody(1))
 !calculate forces
@@ -116,7 +117,7 @@ D = drag(Cl, vbody(1))
 T = throttle
 gravity = inert2body([0d0,0d0,m*g],[psi,theta,phi])
 !calculate angular velocities from Euler rates
-p = psidot-psidot*sin(theta)
+p = phidot-psidot*sin(theta)
 q = thetadot*cos(phi)+psidot*cos(theta)*sin(phi)
 r = psidot*cos(theta)*cos(phi)-thetadot*sin(phi)
 !calculate moments
@@ -145,7 +146,7 @@ distance = distance + vinert*dt
 theta = theta + thetadot*dt
 phi = phi + phidot*dt
 psi = psi + psidot*dt
-write(1,1001) vbody(1), vbody(2), vbody(3), distance(1), distance(2), distance(3), alpha*180/pi, theta*180/pi
+write(1,1001)vbody(1), vbody(2), vbody(3), distance(1), distance(2), distance(3), alpha*180/pi, psi*180/pi, theta*180/pi,phi*180/pi
 end do
 write(*,*) vbody
 write(*,*) distance

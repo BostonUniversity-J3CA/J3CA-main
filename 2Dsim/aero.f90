@@ -27,7 +27,7 @@ double precision function pitchDamp(q)
 	implicit none
 	double precision, intent(in) :: q
 	!damping constant
-	double precision :: damping = 1
+	double precision :: damping = 0
 	pitchDamp = - damping * q
 end function
 double precision function yawRudder(rudder)
@@ -68,4 +68,10 @@ double precision function liftCoeff(alpha)
 	double precision :: Cl0=.3
 	double precision :: Clalpha=6
 	liftCoeff = Cl0 + Clalpha*alpha
+end function
+double precision function thrust(throttle)
+	!returns thrust (in N) as a function of throttle (in RPM)
+	implicit none
+	double precision, intent(in) :: throttle
+	thrust = throttle
 end function
