@@ -1,8 +1,8 @@
 #define kthrottle -2
-#define kpitch -0.1
+#define kpitch -0.36
 #define kdpitch -.1
 #define kheight -.01
-#define pitch0 0.0
+#define pitch0 2
 
 
 //No longer needed

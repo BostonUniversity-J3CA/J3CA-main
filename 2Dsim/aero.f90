@@ -65,7 +65,7 @@ double precision function liftCoeff(alpha)
 	!returns lift coefficient as a function of angle of attack
 	implicit none
 	double precision, intent(in) :: alpha
-	double precision :: Cl0=.3
+	double precision :: Cl0=0
 	double precision :: Clalpha=6
 	liftCoeff = Cl0 + Clalpha*alpha
 end function

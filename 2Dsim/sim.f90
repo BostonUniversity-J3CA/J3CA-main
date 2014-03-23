@@ -5,9 +5,9 @@ double precision, parameter :: g=9.80665D0
 double precision, parameter :: pi=3.14159265358979323846264338D0
 !pi
 !timing variables (s)
-double precision :: time=0D0, endtime=35D0, dt=.001D0
-!rate for control loop (s)
-double precision :: update = .001D0
+double precision :: time=0D0, endtime=100D0, dt=.0001D0
+!Update rate for control loop and for GPS (Hz)
+integer :: update = 100, gpsupdate = 20
 !mass (kg)
 double precision :: m = 2D0
 !angle of attack, coefficient of lift
@@ -19,7 +19,7 @@ double precision :: T, L, D
 !pitch moment
 double precision :: moment
 !aircraft velocity, body frame
-double precision :: vxbody = 10D0, vybody = 0D0
+double precision :: vxbody, vybody
 !aircraft velocity, inertial frame: horizontal/vertical
 double precision :: vx = 10D0, vy = 0D0
 !aircraft pitch
@@ -28,12 +28,12 @@ double precision :: pitch=1D-1
 double precision :: omega=0, omegadot=0
 !moment of inertia (kg*m**2)
 double precision :: I = .06
-!distance: horizontal/vertical
-double precision :: x=0, y= 0
-!wind
-!double precision, dimension(3) :: wind = [0D0, 0D0, 0D0]
+!distance: horizontal/vertical, gps readings
+double precision :: x=0, y=0, gpsx=0, gpsy=0
 !random number
 double precision :: rand
+!counting value
+integer :: counting=0
 interface
 	real(c_double) function getThrottle(velocity) bind(c)
 		!returns throttle from external c function
@@ -77,13 +77,15 @@ open(unit = 1, file = "sim.dat")
 call init_random_seed()
 write(1,*) "vx vy vxbody vybody x y omega pitch alpha"
 do while (time<endtime)
-!write(*,*) elevator, moment, pitch, alpha, omega
 time = time + dt
-!if (nint(time/update) == floor(time/update)) then
+if (mod(counting*gpsupdate, nint(1/dt)) == 0) then
+gpsy = y+nrand()
+end if
+if (mod(counting*update, nint(1/dt)) == 0) then
 !get control inputs
 throttle = getThrottle(vx)
-elevator = getElevator(y+nrand(), pitch, omega)
-!end if
+elevator = getElevator(gpsy,  pitch, omega)
+end if
 !calculate body velocities
 vxbody = vx*cos(pitch)+vy*sin(pitch)
 vybody = vy*cos(pitch)-vx*sin(pitch)
@@ -105,7 +107,10 @@ pitch = pitch + dt * omega
 !update distance
 x = x + vx * dt
 y = y + vy * dt
+if (mod(counting*100, nint(1/dt)) == 0) then
 write(1,1001) vx, vy, vxbody, vybody, x, y, omega*180/pi, pitch*180/pi, alpha*180/pi
+end if
+counting = counting + 1
 end do
 write(*,*) vxbody, vybody
 write(*,*) x, y
