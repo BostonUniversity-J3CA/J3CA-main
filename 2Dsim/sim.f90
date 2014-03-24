@@ -47,10 +47,10 @@ interface
 		implicit none
 		real (c_double), VALUE :: altitude, pitch, pitchrate
 	end function
-	double precision function thrust(throttle)
+	double precision function thrust(throttle, velocity)
 		!returns thrust (in N) as a function of throttle (in RPM)
 		implicit none
-		double precision, intent(in) :: throttle
+		double precision, intent(in) :: throttle, velocity
 	end function
 	real function nrand()
 	end function
@@ -95,7 +95,7 @@ alpha = atan(-vy/vx)+pitch
 Cl = liftCoeff(alpha)
 L = lift(Cl, vxbody)
 D = drag(Cl, vxbody)
-T = thrust(throttle)
+T = thrust(throttle, vxbody)
 moment = pitchElevator(elevator)
 !calculate acceleration, update velocities
 vx = vx + ((T-D)*cos(pitch)-L*sin(pitch))*dt/m

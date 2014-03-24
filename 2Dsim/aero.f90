@@ -69,9 +69,24 @@ double precision function liftCoeff(alpha)
 	double precision :: Clalpha=6
 	liftCoeff = Cl0 + Clalpha*alpha
 end function
-double precision function thrust(throttle)
+double precision function thrust(throttle, velocity)
 	!returns thrust (in N) as a function of throttle (in RPM)
 	implicit none
-	double precision, intent(in) :: throttle
-	thrust = throttle
+	!inputs of propeller speed (RPM) and aircraft velocity (m/s)
+	double precision, intent(in) :: throttle, velocity
+	!diameter of propeller in inches
+	double precision, parameter :: diameter = 8
+	!advance ratio = velocity/n, thrust coefficient = thrust/n**2
+	double precision :: J, kT
+	if (throttle .EQ. 0) then
+		thrust = 0
+	else
+		J = 2362.20472 * velocity/(throttle*diameter)
+		if (J .LE. 1.28458906314633D-1) then
+			kT = -3.25686575113504D-8*J + 1.17507574470878D-8
+		else
+			kT = -1.26852416676591D-8*J + 9.19655559400817D-9
+		end if
+		thrust = 4.44822162 * kT*throttle**2 !converted to N from lbf
+	end if
 end function
