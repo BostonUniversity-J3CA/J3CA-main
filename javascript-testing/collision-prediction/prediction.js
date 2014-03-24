@@ -99,8 +99,9 @@ function update(){
     cx.clearRect(0,0,canvasWidth,canvasHeight);
     var position = ourcraft.move();
     var color    = "#00f";
+    var r        = ourcraft.getRadius();
     cx.beginPath();
-    cx.arc(Math.round(position.x),Math.round(position.y),ourcraft.getRadius(),0,2*Math.PI,false);
+    cx.arc(Math.round(position.x),Math.round(position.y),5,0,2*Math.PI,false);
     cx.strokeStyle="#000";
     cx.stroke();
     cx.closePath();
@@ -110,7 +111,7 @@ function update(){
 	obstacles[i].color = color;
 
 	cx.beginPath();
-	cx.arc(Math.round(position.x),Math.round(position.y),obstacles[i].getRadius(),0,2*Math.PI,false);
+	cx.arc(Math.round(position.x),Math.round(position.y),obstacles[i].getRadius()+r,0,2*Math.PI,false);
 	cx.strokeStyle=obstacles[i].color
 	cx.stroke();
 	cx.closePath();
@@ -129,15 +130,6 @@ function willCollide(obj1,obj2){
     if ( t == true ){
 	console.log(point);
     }
-    /*var x = pos1.x + vel1.x*t;
-    var y = pos1.y + vel1.y*t;
-
-    cx.beginPath();
-    cx.rect(x-5,y-5,10,10);
-    cx.strokeStyle="#0f0";
-    cx.stroke();
-    cx.closePath();
-    $("#time_display").html(t+"<br/>"+x+"<br/>"+y);*/
     if ( t > 0 ){
 	return true;
     }
