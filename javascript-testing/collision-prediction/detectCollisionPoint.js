@@ -4,7 +4,25 @@
  *   y_0 + v_y*t = y2_0 + v2_y*s
  *   z_0 + v_z*t = z2_0 + v2_z*s
  */
-/* bool */function detectCollisionPoint(/*Aircraft*/ obj1, /*Aircraft*/ obj2, /*int []*/ collisionPoint){
+/* bool */function detectCollisionPoint(/*Aircraft*/obj1, /*Aircraft*/obj2, /*int []*/ collisionPoint){
+    var t = calculateT(obj1,obj2);
+    if ( isNaN(t) ){
+	// No collision!
+	return false;
+    }
+    else {
+	var pos = obj1.getPosition();
+	var vel = obj1.getVelocity();
+	var x   = pos.x + vel.x*t;
+	var y   = pos.y + vel.y*t;
+	cx.beginPath();
+	cx.rect(x-5,y-5,10,10);
+	cx.strokeStyle="#0f0";
+	cx.stroke();
+	cx.closePath();
+    }
+}
+/* bool */function detectCollisionPoint_cramersRule(/*Aircraft*/ obj1, /*Aircraft*/ obj2, /*int []*/ collisionPoint){
     var pos1 = obj1.getPosition();
     var pos2 = obj2.getPosition();
     var old1 = obj1.getPrevPosition();
