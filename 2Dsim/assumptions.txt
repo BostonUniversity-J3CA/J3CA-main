@@ -1,4 +1,11 @@
-Mass is 2 kg
+Mass is 1.193 kg
+Pitch moment of inertia is:
+	.06 kg*m**2, from Solidworks model. (Density = 80 kg/m^3)
 Elevator effectiveness is as follows:
-	S = 13 in * 1.25 in = 16.25 in^2 = .01048385 m^2
-	L = 1/2 rho * v^2 * 
+	A = 33.5 cm * 3 cm = .01005 m**2	
+	x = 57.5 cm
+	L = 1/2 rho * v**2 * A * Cl= .0060501 kg/m * v**2 * Cl
+	Torque = L*x = .0034788075 kg * v**2 * Cl
+	Cl = 6*alpha
+	Torque = .0034788075 kg * v**2 * 6 * alpha
+	Torque = 020872845 kg * v**2 * alpha

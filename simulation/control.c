@@ -7,15 +7,15 @@ double getaileron()
 return 0;
 }
 
-double getelevator(float pitch, float altitude)
+double getelevator(float pitch, float pitchrate)
 {
-float elevator = kpitch*pitch + kaltitude*altitude;
+float elevator = kpitch*(pitch-pitch0*3.141592653/180) + kdpitch*pitchrate;
 return elevator;
 }
 
-double getrudder()
+double getrudder(float yaw)
 {
-return 0;
+return kyaw*yaw;
 }
 
 float getthrottle(float velocity)
