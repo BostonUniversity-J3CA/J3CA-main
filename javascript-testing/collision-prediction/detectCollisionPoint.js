@@ -1,10 +1,25 @@
+/* bool */function detectCollisionPoint(/*Aircraft*/obj1, /*Aircraft*/obj2, /*int []*/ collisionPoint){
+    var t = calculateT(obj1,obj2);
+    if ( isNaN(t) ){
+	// No collision!
+	return false;
+    }
+    else {
+	var pos = obj1.getPosition();
+	var vel = obj1.getVelocity();
+	collisionPoint[0] = pos[0] + vel[0]*t;
+	collisionPoint[1] = pos[1] + vel[1]*t;
+	collisionPoint[2] = pos[2] + vel[2]*t;
+	return true;
+    }
+}
 /**
  * I am using the following equations to solve for the point of collision
  *   x_0 + v_x*t = x2_0 + v2_x*s
  *   y_0 + v_y*t = y2_0 + v2_y*s
  *   z_0 + v_z*t = z2_0 + v2_z*s
  */
-/* bool */function detectCollisionPoint(/*Aircraft*/ obj1, /*Aircraft*/ obj2, /*int []*/ collisionPoint){
+/* bool */function detectCollisionPoint_cramersRule(/*Aircraft*/ obj1, /*Aircraft*/ obj2, /*int []*/ collisionPoint){
     var pos1 = obj1.getPosition();
     var pos2 = obj2.getPosition();
     var old1 = obj1.getPrevPosition();

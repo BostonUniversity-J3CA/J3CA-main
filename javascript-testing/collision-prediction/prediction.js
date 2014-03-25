@@ -8,90 +8,18 @@ var cx           = null;
 var canvasWidth  = 0;
 var canvasHeight = 0;
 // Animation variables
-var playAnimation = true;
+var playAnimation = false;
 // Constants
-var NUM_OBSTACLES = 1;
-var MAX_CLOSENESS = 3; // The difference in seconds between the s and t constants in the collision formula. If s = t, then the obstacle and our
+var num_obstacles = 20;
+var max_closeness = 3; // The difference in seconds between the s and t constants in the collision formula. If s = t, then the obstacle and our
 // aircraft will be at the same exact point in space at that time.
-function Aircraft(){
-    var self     = this;
-    var radius   = 2*zoom; // The length of the aircraft is 1 meter but I'm applying a factor of safety of 2
-    var position = {
-	x : 0,  // Will be in pixels converted from meters using the factor pxPerMeter defined above
-	y : 300, // Arbitrary for now, just as an example
-	z : 0
-    }
-    var origPosition = {
-	x : 0,
-	y : 300,
-	z : 0
-    }
-    var velocity = {
-	x : 12 * pxPerMeter, // Meters per second converted to pixels per second
-	y : 0, 
-	z : 0
-    }
-    var prevPosition = {
-	x : 0,
-	y : 0,
-	z : 0
-    }
-    this.color   = "#00f";
-    this.setVelocity = function(x,y,z){
-	velocity.x = x;
-	velocity.y = y;
-	velocity.z = z;
-    }
-    this.setPosition = function(x,y,z){
-	position.x = x;
-	position.y = y;
-	position.z = z;
-    }
-    this.move        = function(){
-	prevPosition.x = position.x;
-	prevPosition.y = position.y;
-	prevPosition.z = position.z;
-	position.x += velocity.x/60; // Velocity is in pixels per second, dividing by 60 will give pixels per frame
-	position.y += velocity.y/60;
-	position.z += velocity.z/60;
-	return position;
-    }
-    this.getPosition = function(){
-	return position;
-    }
-    this.getRadius   = function(){
-	return radius;
-    }
-    this.setRandomValues = function(){
-	position = {
-	    x : rand(0,canvasWidth),
-	    y : rand(0,canvasHeight),
-	    z : 0
-	};
-	origPosition = {
-	    x : position.x,
-	    y : position.y,
-	    z : position.z
-	}
-	velocity = {
-	    x : rand(-10,30),
-	    y : rand(-10,30),
-	    z : 0
-	};
-	radius = rand(2,5);
-	return self;
-    }
-    this.getOrigPosition = function(){
-	return origPosition;
-    }
-    this.getVelocity = function(){
-	return velocity;
-    }
-    this.getPrevPosition = function(){
-	return prevPosition;
-    }
-    return self;
-}
+var velocityRange = [
+    [-10,30],
+    [-10,30],
+    [0,0]
+];
+var defPosition = [0,300,0];
+var ourVel      = [12*pxPerMeter,0,0];
 function rand(min,max){
     return min + Math.floor(Math.random()*(max-min+1));
 }
@@ -99,8 +27,9 @@ function update(){
     cx.clearRect(0,0,canvasWidth,canvasHeight);
     var position = ourcraft.move();
     var color    = "#00f";
+    var r        = ourcraft.getRadius();
     cx.beginPath();
-    cx.arc(Math.round(position.x),Math.round(position.y),ourcraft.getRadius(),0,2*Math.PI,false);
+    cx.arc(Math.round(position[0]),Math.round(position[1]),5,0,2*Math.PI,false);
     cx.strokeStyle="#000";
     cx.stroke();
     cx.closePath();
@@ -110,7 +39,7 @@ function update(){
 	obstacles[i].color = color;
 
 	cx.beginPath();
-	cx.arc(Math.round(position.x),Math.round(position.y),obstacles[i].getRadius(),0,2*Math.PI,false);
+	cx.arc(Math.round(position[0]),Math.round(position[1]),obstacles[i].getRadius()+r,0,2*Math.PI,false);
 	cx.strokeStyle=obstacles[i].color
 	cx.stroke();
 	cx.closePath();
@@ -121,32 +50,38 @@ function update(){
     return;
 }
 function willCollide(obj1,obj2){
-    var point = [0,0,0];
-    var t = detectCollisionPoint(obj1,obj2,point);
-    var vel1  = obj1.getVelocity();
-    var pos1  = obj1.getOrigPosition();
+    var point   = [0,0,0];
+    var t1 = -1;
+    var t2 = -1;
     
-    if ( t == true ){
-	console.log(point);
-    }
-    /*var x = pos1.x + vel1.x*t;
-    var y = pos1.y + vel1.y*t;
-
-    cx.beginPath();
-    cx.rect(x-5,y-5,10,10);
-    cx.strokeStyle="#0f0";
-    cx.stroke();
-    cx.closePath();
-    $("#time_display").html(t+"<br/>"+x+"<br/>"+y);*/
-    if ( t > 0 ){
-	return true;
+    if ( detectCollisionPoint(obj1,obj2,point) ){
+	t1 = getT(obj1,point);
+	t2 = getT(obj2,point);
+	if ( Math.abs(t1 - t2) < 2 ){
+	    drawCollisionPoint(point);
+	    return true;
+	}
     }
     return false;
 }
-function toggleAnim(){
-    playAnimation = !playAnimation;
-    animate();
-    return;
+function drawCollisionPoint(point){
+    cx.beginPath();
+    cx.rect(point[0]-5,point[1]-5,10,10);
+    cx.strokeStyle="#0f0";
+    cx.stroke();
+    cx.closePath();
+}
+/*int*/function getT(/*Aircraft*/ aircraft, /*vector<int>*/ point){
+    /*vector<int>*/var pos  = aircraft.getPosition();
+    /*vector<int>*/var vel  = aircraft.getVelocity();
+    /*int*/        var t    = -1;       
+    for ( var i = 0; i < 3; i++ ){
+	if ( vel[i] != 0 ){
+	    t = ( point[i] - pos[i] ) / vel[i];
+	    return t;
+	}
+    }
+    return t;
 }
 function animate(){
     if ( playAnimation ){
@@ -154,18 +89,72 @@ function animate(){
     }
     return;
 }
+function systemStart(){
+    playAnimation = false;
+    ourcraft = new Aircraft();
+    ourcraft.setOrigPosition(defPosition[0],defPosition[1],defPosition[2]);
+    ourcraft.setPosition(defPosition[0],defPosition[1],defPosition[2]);
+    ourcraft.setVelocity(ourVel[0],ourVel[1],ourVel[2]);
+    obstacles = [];
+    for ( var i = 0; i < num_obstacles; i++ ){
+	obstacles[i] = new Aircraft();
+	obstacles[i].setVelocityRange(velocityRange);
+	obstacles[i].setRandomValues();
+    }
+}
+function saveOptions(){
+    num_obstacles = $("#num_objects").val();
+    max_closeness = $("#closeness").val();
+    defPosition   = [$("#pos_x").val()*1,$("#pos_y").val()*1,$("#pos_z").val()*1];
+    ourVel        = [$("#vel_x").val()*1,$("#vel_y").val()*1,$("#vel_z").val()*1];
+    $("#options").hide();
+    $("#main").show();
+}
 $(document).ready(function(){
     cx           = $("#football_field");
     cx.attr({
 	width : $(window).width(),
 	height: $(window).height()*0.9
-    });
+    }).css("top","50px");
     cx           = cx[0].getContext('2d');
     canvasWidth  = $(window).width();
     canvasHeight = $(window).height();
-    ourcraft = new Aircraft();
-    for ( var i = 0; i < NUM_OBSTACLES; i++ ){
-	obstacles[i] = new Aircraft().setRandomValues();
-    }
-    animate();
-}).click(toggleAnim);
+    // Display default values
+    $("#num_objects").val(num_obstacles);
+    var defVal = velocityRange;
+    $("#min_x").val(defVal[0][0]);
+    $("#max_x").val(defVal[0][1]);
+    $("#min_y").val(defVal[1][0]);
+    $("#max_y").val(defVal[1][1]);
+    $("#min_z").val(defVal[2][0]);
+    $("#max_z").val(defVal[2][1]);
+    var vel = ourVel;
+    $("#vel_x").val(vel[0]);
+    $("#vel_y").val(vel[1]);
+    $("#vel_z").val(vel[2]);
+    var orig = defPosition;
+    $("#pos_x").val(orig[0]);
+    $("#pos_y").val(orig[1]);
+    $("#pos_z").val(orig[2]);
+    $("#closeness").val(max_closeness);
+
+    // Set button functionality
+    $("#options_button").click(function(){
+	$("#main").hide();
+	$("#options").show();
+    });
+    $("#start_button").click(function(){
+	playAnimation = true;
+	animate();
+    });
+    $("#pause_button").click(function(){
+	playAnimation = false;
+    });
+    $("#reset_button").click(function(){
+	systemStart();
+    });
+    $("#save_options").click(function(){
+	saveOptions();
+    });
+    systemStart();
+});

@@ -2,25 +2,60 @@
   <head>
     <title>Collision Prediction</title>
     <script type="text/javascript" src="../jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="calculateT.js"></script>
+    <script type="text/javascript" src="Aircraft.js"></script>
     <script type="text/javascript" src="detectCollisionPoint.js"></script>
     <script type="text/javascript" src="prediction.js"></script>
+    <link rel="stylesheet" type="text/css" href="main.css"></link>
     <style type="text/css">
       #football_field {
         position:absolute;
         top:0;
         left:0;
       }
-      #time_dispaly {
-      position:absolute;
-      top:0;
-      left:0;
-      }
     </style>
   </head>
   <body>
-    <div id="time_display"></div>
+    <div id="main">
+      <button id="start_button">Start</button>
+      <button id="reset_button">Reset</button>
+      <button id="pause_button">Pause</button>
+      <button id="options_button">Options</button>
+    </div>
+    <div id="options">
+      <ul id="left" class="half-form">
+	<li>Number of Obstacles:</li>
+	<li>Obstacle Velocities:</li>
+	<li>Our Aircraft Velocity:</li>
+	<li>Our Aircraft Initial Pos:</li>
+	<li>Closeness (in seconds):</li>
+      </ul>
+      <ul id="right" class="half-form">
+	<li><input type="text" id="num_objects" size="3" /></li>
+	<li>
+	  X_MIN: <input type="text" id="min_x" size="3" />
+	  X_MAX: <input type="text" id="max_x" size="3" />,
+	  Y_MIN: <input type="text" id="min_y" size="3" />
+	  Y_MAX: <input type="text" id="max_y" size="3" />,
+	  Z_MIN: <input type="text" id="min_z" size="3" />
+	  Z_MAX: <input type="text" id="max_z" size="3" />
+	</li>
+	<li>
+	  X: <input type="text" id="vel_x" size="3" />,
+	  Y: <input type="text" id="vel_y" size="3" />,
+	  Z: <input type="text" id="vel_z" size="3" />
+	</li>
+	<li>
+	  X: <input type="text" id="pos_x" size="3" />,
+	  Y: <input type="text" id="pos_y" size="3" />,
+	  Z: <input type="text" id="pos_z" size="3" />
+	</li>
+	<li>
+	  <input type="text" id="closeness" size="3" />
+	</li>
+      </ul><br/>
+      <button id="save_options">Save</option>
+    </div>
     <canvas id="football_field"></canvas>
-    <table id="data" style="display:none">
-    </table>
   </body>
 </html>
