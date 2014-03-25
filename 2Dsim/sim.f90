@@ -56,8 +56,8 @@ interface
 	end function
 	subroutine init_random_seed()
 	end subroutine
-	double precision function pitchElevator(elevator)
-		double precision, intent(in) :: elevator
+	double precision function pitchElevator(elevator, velocity)
+		double precision, intent(in) :: elevator, velocity
 	end function
 	double precision function pitchDamp(pitchrate)
 		double precision, intent(in) :: pitchrate
@@ -84,7 +84,7 @@ end if
 if (mod(counting*update, nint(1/dt)) == 0) then
 !get control inputs
 throttle = getThrottle(vx)
-elevator = getElevator(gpsy,  pitch, omega)
+elevator = getElevator(gpsy, pitch, omega)
 end if
 !calculate body velocities
 vxbody = vx*cos(pitch)+vy*sin(pitch)
@@ -96,7 +96,7 @@ Cl = liftCoeff(alpha)
 L = lift(Cl, vxbody)
 D = drag(Cl, vxbody)
 T = thrust(throttle, vxbody)
-moment = pitchElevator(elevator)
+moment = pitchElevator(elevator, vxbody)
 !calculate acceleration, update velocities
 vx = vx + ((T-D)*cos(pitch)-L*sin(pitch))*dt/m
 vy = vy + ((T-D)*sin(pitch)+L*cos(pitch)-g)*dt/m

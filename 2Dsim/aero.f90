@@ -1,10 +1,8 @@
-double precision function pitchElevator(elevator)
+double precision function pitchElevator(elevator, velocity)
 	implicit none
-	!returns pitch moment as a function of elevator deflection 
-	double precision, intent(in) :: elevator 
-	!constant of proportionality
-	double precision :: kElevator = 1
-	pitchElevator = kElevator*elevator
+	!returns pitch moment as a function of elevator deflection in degrees
+	double precision, intent(in) :: elevator, velocity
+	pitchElevator = .020872845 * (velocity**2) * (elevator*3.14159265359/180)
 end function
 double precision function pitchDamp(q)
 	!returns damping moment as a function of pitch rate

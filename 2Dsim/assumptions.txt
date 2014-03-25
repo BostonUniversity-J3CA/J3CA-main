@@ -8,4 +8,4 @@ Elevator effectiveness is as follows:
 	Torque = L*x = .0034788075 kg * v**2 * Cl
 	Cl = 6*alpha
 	Torque = .0034788075 kg * v**2 * 6 * alpha
-	Torque = 020872845 kg * v**2 * alpha
+	Torque = .020872845 kg * v**2 * alpha

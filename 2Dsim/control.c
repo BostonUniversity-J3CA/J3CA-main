@@ -5,6 +5,7 @@
 
 double getelevator(double height, double pitch, double pitchrate)
 {
+//returns elevator deflection in degrees as a function of pitch in radians
 double elevator = kheight*height + kpitch*(pitch-pitch0*3.141592653/180) + kdpitch*pitchrate;
 return elevator;
 }
