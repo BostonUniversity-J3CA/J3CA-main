@@ -1,19 +1,3 @@
-double precision function rollAileron(aileron)
-	implicit none
-	!returns roll moment as a function of aileron deflection 
-	double precision, intent(in) :: aileron 
-	!constant of proportionality
-	double precision :: kAileron = 1
-	rollAileron = kAileron*aileron
-end function
-double precision function rollDamp(p)
-	!returns damping moment as a function of roll rate
-	implicit none
-	double precision, intent(in) :: p
-	!damping constant
-	double precision :: damping = 1
-	rollDamp = - damping * p
-end function
 double precision function pitchElevator(elevator)
 	implicit none
 	!returns pitch moment as a function of elevator deflection 
@@ -29,22 +13,6 @@ double precision function pitchDamp(q)
 	!damping constant
 	double precision :: damping = 0
 	pitchDamp = - damping * q
-end function
-double precision function yawRudder(rudder)
-	implicit none
-	!returns yaw moment as a function of rudder deflection 
-	double precision, intent(in) :: rudder 
-	!constant of proportionality
-	double precision :: kRudder = 1
-	yawRudder = kRudder*rudder
-end function
-double precision function yawDamp(r)
-	!returns damping moment as a function of yaw rate
-	implicit none
-	double precision, intent(in) :: r
-	!damping constant
-	double precision :: damping = 1
-	yawDamp = - damping * r
 end function
 double precision function lift(Cl, vAir)
 	!returns lift as a function of Cl and velocity 
