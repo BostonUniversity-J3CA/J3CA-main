@@ -1,18 +1,18 @@
 // Scaling information
 var pxPerMeter = 10; // 10 pixels = 1 meter
-var width      = 100; // meters
-var height     = 60; // meters
+var width      = 400; // meters
+var height     = 300; // meters
 
 // PARAMETERS THAT AFFECT PROGRAM - Feel free to change these parameters
 // PLEASE NOTE: currently the drawing area is set up using the default JavaScript settings. This means that the canvas is inverted: the origin is
 // the top left corner of the screen, and positive y moves down the screen. Position x still moves to the right
 var num_obstacles = 1;
-var obstacle_position = [rand(width/2,width),rand(0,height/2),0]; // [x,y,z] ( in meters )
-var obstacle_velocity = [rand(-0.5,0),rand(0,0.5),0]; // [vx,vy,vz] ( in meters per second )
-var obstacle_radius   = rand(0.2,1);
+var obstacle_position = [rand(width/4,width),rand(0,height),0]; // [x,y,z] ( in meters )
+var obstacle_velocity = [rand(-2,2),rand(-2,2),0]; // [vx,vy,vz] ( in meters per second )
+var obstacle_radius   = rand(2,6);
 var aircraft_radius   = 1; // meters
-var aircraft_position = [0,25,0];
-var aircraft_velocity = [0.5,0,0];
+var aircraft_position = [0,150,0];
+var aircraft_velocity = [2,0,0];
 // NOTE: The program assumes that our aircraft is a point to make calculations easier. Which means that it makes each obstacle's radius = 
 // obstacle_radius + aircraft_radius
 
@@ -21,17 +21,27 @@ var rayTracingDetection    = 500; // Detection range for when ray tracing is use
 var nonRayTracingDetection = 30;  // Detection range for when ray tracing is NOT used
 
 // Please do not touch these variables!
+var tracker = null;
 var cx = null;
 var queue = [];
 var obstacles = [];
 var anim = window.webkitRequestAnimationFrame ? window.webkitRequestAnimationFrame : window.mozRequestAnimationFrame ? window.mozRequestAnimationFrame : window.requestAnimationFrame ? window.requestAnimationFrame : null;
 var play = true;
-function draw(pos,radius,color){
-    cx.beginPath();
-    cx.arc(pos[0]*pxPerMeter,pos[1]*pxPerMeter,radius/2*pxPerMeter,0,Math.PI*2,false);
-    cx.strokeStyle=color;
-    cx.stroke();
-    cx.closePath();
+function draw(pos,radius,color,tracker){
+    if ( !tracker ){
+	cx.beginPath();
+	cx.arc(pos[0],pos[1],radius,0,Math.PI*2,false);
+	cx.strokeStyle=color;
+	cx.stroke();
+	cx.closePath();
+    }
+    else {
+	tracker.beginPath();
+	tracker.arc(pos[0],pos[1],radius,0,Math.PI*2,false);
+	tracker.strokeStyle=color;
+	tracker.stroke();
+	tracker.closePath();
+    }
 }
 // Main drawing function: runs approximately 1/60 second (AKA 60 frames per second)
 function update(){
@@ -42,7 +52,7 @@ function update(){
 	var t2        = -1;
 	var closeness = 0;
 	// Clear the screen
-	cx.clearRect(0,0,width*pxPerMeter,height*pxPerMeter);
+	cx.clearRect(0,0,width,height);
 	// Now, we're going to loop through all of the aircraft, move them, and check for collisions
 	for ( var i = queue.length-1; i > -1; i-- ){
 	    // Reset the variables
@@ -63,7 +73,7 @@ function update(){
 		    if ( Math.abs(t-t2) < closeness && ( t >= 0 || t2 >= 0 ) ){
 			// Draw the detection point
 			cx.beginPath();
-			cx.rect(collision[0]*pxPerMeter-5,collision[1]*pxPerMeter-5,10,10);
+			cx.rect(collision[0]-5,collision[1]-5,10,10);
 			cx.strokeStyle="#0f0";
 			cx.stroke();
 			cx.closePath();
@@ -78,6 +88,9 @@ function update(){
 		else {
 		    queue[i].setColor("#00f");
 		}
+	    }
+	    else {
+		draw(queue[0].getPosition(),queue[0].getRadius(),"#000",tracker);
 	    }
 	}
     }
@@ -99,12 +112,17 @@ function rand(min,max){
 }
 $(document).ready(function(){
     cx = $("#field").attr({
-	"width"   : width*pxPerMeter,
-	"height"  : height*pxPerMeter
+	"width"   : width,
+	"height"  : height
     }).css({
 	"position" : "absolute",
 	"top"      : 0,
 	"left"     : 0
+    })[0].getContext('2d');
+
+    tracker = $("#tracker").attr({
+	"width"  : width,
+	"height" : height
     })[0].getContext('2d');
 
     queue.push(new Aircraft());
