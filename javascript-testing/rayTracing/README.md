@@ -9,3 +9,5 @@ To use:
 3) Click again to set the second point, this will make a ray
 4) Move the mouse to move the ray
 5) Click the area again to reset the points
+
+Works in Google Chrome, Firefox, and Safari. Opera has not been tested. IE does not work.
