@@ -73,5 +73,8 @@ function Aircraft(){
     this.getPrevPosition = function(){
 	return prevPosition;
     }
+    this.setDefaultY     = function(y){
+	defaultY = y;
+    }
     return self;
 }

@@ -20,8 +20,8 @@ function rayTraceCollision(/*const int[]*/aircraft,/*const int[]*/obstacle,/*int
     var dalt = aircraft[2] - aircraft[5];
 
     cx.beginPath();
-    cx.moveTo(aircraft[0],aircraft[1]);
-    cx.lineTo(1500,aircraft[1]);
+    cx.moveTo(aircraft[0]*pxPerMeter,aircraft[1]*pxPerMeter);
+    cx.lineTo(1500,aircraft[1]*pxPerMeter);
     cx.strokeStyle="#f00";
     cx.stroke();
     cx.closePath();
