@@ -10,7 +10,7 @@ sim.o : sim.f90
 aero.o : aero.f90
 	gcc -c aero.f90
 
-control.o : control.c constants.h
+control.o : control.c constants.h pathfunctions.c
 	gcc -c control.c
 
 clean :

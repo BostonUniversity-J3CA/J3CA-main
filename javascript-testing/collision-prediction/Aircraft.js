@@ -11,6 +11,11 @@ function Aircraft(){
 	[-10, 30],
 	[0, 0]
     ];
+    var positionRange = [
+	[0,canvasWidth],
+	[0,canvasHeight],
+	[0,0]
+    ];
 
     this.color   = "#00f";
     this.setVelocity = function(x,y,z){
@@ -36,9 +41,9 @@ function Aircraft(){
     }
     this.setRandomValues = function(){
 	position = [
-	    rand(0,canvasWidth),
-	    rand(0,canvasHeight),
-	    0
+	    rand(positionRange[0][0],positionRange[0][1]),
+	    rand(positionRange[1][0],positionRange[1][1]),
+	    rand(positionRange[2][0],positionRange[2][1])
 	];
 	origPosition = [
 	    position[0],
@@ -70,6 +75,9 @@ function Aircraft(){
     }
     this.getVelocityRange = function(){
 	return velocityRange;
+    }
+    this.setPositionRange = function(range){
+	positionRange = range;
     }
     return self;
 }

@@ -10,14 +10,15 @@ var canvasHeight = 0;
 // Animation variables
 var playAnimation = false;
 // Constants
-var num_obstacles = 20;
-var max_closeness = 3; // The difference in seconds between the s and t constants in the collision formula. If s = t, then the obstacle and our
+var num_obstacles = 1;
+var max_closeness = 1; // The difference in seconds between the s and t constants in the collision formula. If s = t, then the obstacle and our
 // aircraft will be at the same exact point in space at that time.
 var velocityRange = [
     [-10,30],
     [-10,30],
     [0,0]
 ];
+var positionRange = [];
 var defPosition = [0,300,0];
 var ourVel      = [12*pxPerMeter,0,0];
 function rand(min,max){
@@ -29,7 +30,7 @@ function update(){
     var color    = "#00f";
     var r        = ourcraft.getRadius();
     cx.beginPath();
-    cx.arc(Math.round(position[0]),Math.round(position[1]),5,0,2*Math.PI,false);
+    cx.arc(Math.round(position[0]),Math.round(position[1]),1,0,2*Math.PI,false);
     cx.strokeStyle="#000";
     cx.stroke();
     cx.closePath();
@@ -57,7 +58,8 @@ function willCollide(obj1,obj2){
     if ( detectCollisionPoint(obj1,obj2,point) ){
 	t1 = getT(obj1,point);
 	t2 = getT(obj2,point);
-	if ( Math.abs(t1 - t2) < 2 ){
+	$("#main").html(t1-t2);
+	if ( Math.abs(t1 - t2) <= max_closeness ){
 	    drawCollisionPoint(point);
 	    return true;
 	}
@@ -99,6 +101,7 @@ function systemStart(){
     for ( var i = 0; i < num_obstacles; i++ ){
 	obstacles[i] = new Aircraft();
 	obstacles[i].setVelocityRange(velocityRange);
+	obstacles[i].setPositionRange(positionRange);
 	obstacles[i].setRandomValues();
     }
 }
@@ -107,8 +110,11 @@ function saveOptions(){
     max_closeness = $("#closeness").val();
     defPosition   = [$("#pos_x").val()*1,$("#pos_y").val()*1,$("#pos_z").val()*1];
     ourVel        = [$("#vel_x").val()*1,$("#vel_y").val()*1,$("#vel_z").val()*1];
+    velocityRange = [[$("#min_x").val(),$("#max_x").val()],[$("#min_y").val(),$("#max_y").val()],[$("#min_z").val(),$("#max_z").val()]];
+    positionRange = [[$("#pos_min_x").val(),$("#pos_max_x").val()],[$("#pos_min_y").val(),$("#pos_max_y").val()],[$("#pos_min_z").val(),$("#pos_max_z").val()]];
     $("#options").hide();
     $("#main").show();
+    systemStart();
 }
 $(document).ready(function(){
     cx           = $("#football_field");
@@ -128,6 +134,17 @@ $(document).ready(function(){
     $("#max_y").val(defVal[1][1]);
     $("#min_z").val(defVal[2][0]);
     $("#max_z").val(defVal[2][1]);
+    $("#pos_min_x").val(0);
+    $("#pos_max_x").val(canvasWidth);
+    $("#pos_min_y").val(0);
+    $("#pos_max_y").val(canvasHeight);
+    $("#pos_min_z").val(0);
+    $("#pos_max_z").val(0);
+    positionRange = [
+	[0,canvasWidth],
+	[0,canvasHeight],
+	[0,0]
+    ];
     var vel = ourVel;
     $("#vel_x").val(vel[0]);
     $("#vel_y").val(vel[1]);
@@ -152,6 +169,7 @@ $(document).ready(function(){
     });
     $("#reset_button").click(function(){
 	systemStart();
+	update();
     });
     $("#save_options").click(function(){
 	saveOptions();
