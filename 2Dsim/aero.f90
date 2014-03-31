@@ -44,7 +44,7 @@ double precision function thrust(throttle, velocity)
 	double precision, parameter :: diameter = 8
 	!advance ratio = velocity/n, thrust coefficient = thrust/n**2
 	double precision :: J, kT
-	if (throttle .EQ. 0) then
+	if (throttle .LE. 0) then
 		thrust = 0
 	else
 		J = 2362.20472 * velocity/(throttle*diameter)
