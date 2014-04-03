@@ -24,3 +24,19 @@ Currently only one obstacle is used in the program. If you would like to change 
 number of them, etc) then open main.js and adjust the corresponding values. They were named in such a way that's obvious which variables affect
 which parameter in the program.
 
+----------------------------------------------------------------------------------------------------------------------------------------------------
+4/2/2014 - UPDATE
+
+So, I changed the algorithm just a tiny bit...before the aircraft would change it's trajectory and keep ascending until it got to the point of
+collision and then would descend back to the original trajectory. This wouldn't work very well if the obstacle was moving in the same direction
+as our aircraft. To account for this, I made the algorithm: 1) ascend to a point above the calculated collision point ( collision point + obstacle
+radius + safety factor ), 2) fly linearly until it passes the point ( obstacle center + obstacle radius + safety margin ), and 3) descend back to
+the original trajectory. 
+
+I believe this only works for one obstacle...currently it may not be easy to expand to multiple objects. I will likely have to reorganize my code
+to make it more modular. 
+
+My next step ( after calculating a rough accuracy ) is converting my code into C. This shouldn't be too bad, so will likely take about 2-3 hours 
+(including: translating, testing, and debugging). I intend to place all of the necessary functions into one file since they are not very long.
+
+I will keep you guys updated.
