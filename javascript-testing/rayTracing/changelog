@@ -1,0 +1,3 @@
+2-22-2014:
+	- Created the test page and function for detecting collisions with ray tracing. Currently, it has been tested only for 2D linear trajectories with a stationary obstacle.
+	- The test page is rayTracing.html, it graphically shows where the projected collision will occur! We can begin moving this code to C++ if we want. Otherwise, I will continue with the testing in JavaScript. I will attempt to make the code easily transferable to C++.
