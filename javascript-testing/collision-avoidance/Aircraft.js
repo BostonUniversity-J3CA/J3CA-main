@@ -10,34 +10,33 @@ function Aircraft(){
     var point        = null;
     var t            = 0;
     var pointIsLocked= false;
+    var angle        = 0;
     
-    function move(){
+    function linear(){
 	prevPosition = position.slice();
 	position[0]+=velocity[0];
 	position[1]+=velocity[1];
 	position[2]+=velocity[2];
     }
-    function move_2(){
+    function bump(){
 	prevPosition = position.slice();
-	position[0]+=velocity[0];
-	var add = simple_path(position[0],position[1],point[0],point[1],defaultY,t);
-	t+=0.1;
+	position[0] += velocity[0];
+	var add = simple_path(position[0],position[1],point[0],point[1],defaultY);
+	position[1] += add;
+	position[2] += velocity[2];
 	if ( position[0] >= point[0] ){
-	    t = 0;
-	}
-	position[1]+=add;
-	position[2]+=velocity[2];
-	if ( position[1] < defaultY+5 && position[1] > defaultY-5 ){
-	    self.move     = move;
 	    pointIsLocked = false;
 	}
+	if ( height-position[1] < defaultY+5 && height-position[1] > defaultY-5 ){
+	    self.move     = linear;
+	}
     }
-    this.move = move;
+    this.move = linear;
     this.newTrajectory = function(pt){
 	if ( pointIsLocked === false ){
 	    point = pt;
 	    pointIsLocked = true;
-	    self.move = move_2;
+	    self.move = bump;
 	}
     }
     this.setColor    = function(col){

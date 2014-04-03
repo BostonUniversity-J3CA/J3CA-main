@@ -1,23 +1,25 @@
 // Scaling information
-var pxPerMeter = 10; // 10 pixels = 1 meter
-var width      = 400; // meters
-var height     = 300; // meters
+var pxPerMeter = screen.width/100; // 100 meters = screen width
+var width      = screen.width; // meters
+var height     = screen.height; // meters
 
 // PARAMETERS THAT AFFECT PROGRAM - Feel free to change these parameters
 // PLEASE NOTE: currently the drawing area is set up using the default JavaScript settings. This means that the canvas is inverted: the origin is
 // the top left corner of the screen, and positive y moves down the screen. Position x still moves to the right
 var num_obstacles = 1;
-var obstacle_position = [rand(width/4,width),rand(0,height),0]; // [x,y,z] ( in meters )
-var obstacle_velocity = [rand(-2,2),rand(-2,2),0]; // [vx,vy,vz] ( in meters per second )
-var obstacle_radius   = rand(2,6);
-var aircraft_radius   = 1; // meters
-var aircraft_position = [0,150,0];
-var aircraft_velocity = [2,0,0];
+var obstacle_position = [rand(25,75),0,0]; // [x,y,z] ( in meters )
+var obstacle_velocity = [rand(-15,15),rand(0,20),0]; // [vx,vy,vz] ( in meters per second )
+var obstacle_radius   = rand(0.5,3);
+var aircraft_radius   = 0.5; // meters
+var aircraft_position = [0,30,0];
+var aircraft_velocity = [12,0,0];
+var avoidBy           = 3; // avoid the obstacle by n meters
+var bumpCoeff         = 10; // A coefficient for the bump function that determines the bump's steepness
 // NOTE: The program assumes that our aircraft is a point to make calculations easier. Which means that it makes each obstacle's radius = 
 // obstacle_radius + aircraft_radius
 
 // Detection range variables ( in seconds )
-var rayTracingDetection    = 500; // Detection range for when ray tracing is used
+var rayTracingDetection    = 100; // Detection range for when ray tracing is used
 var nonRayTracingDetection = 30;  // Detection range for when ray tracing is NOT used
 
 // Please do not touch these variables!
@@ -30,15 +32,17 @@ var play = true;
 function draw(pos,radius,color,tracker){
     if ( !tracker ){
 	cx.beginPath();
-	cx.arc(pos[0],pos[1],radius,0,Math.PI*2,false);
+	cx.arc(pos[0],height-(pos[1]),radius,0,Math.PI*2,false);
 	cx.strokeStyle=color;
+	cx.strokeWidth="2";
 	cx.stroke();
 	cx.closePath();
     }
     else {
 	tracker.beginPath();
-	tracker.arc(pos[0],pos[1],radius,0,Math.PI*2,false);
+	tracker.arc(pos[0],height-(pos[1]),radius,0,Math.PI*2,false);
 	tracker.strokeStyle=color;
+	tracker.strokeWidth="2";
 	tracker.stroke();
 	tracker.closePath();
     }
@@ -61,26 +65,28 @@ function update(){
 	    t2 = -1;
 	    queue[i].move();
 	    // Draw the aircraft
-	    draw(queue[i].getPosition(),queue[i].getRadius(),queue[i].getColor());
 	    if ( i != 0 ){ // If the current aircraft is NOT our aircraft
+		draw(queue[i].getPosition(),queue[i].getRadius(),queue[i].getColor());
 		// The ray variable tells our program if ray tracing was used or not. If ray.val == TRUE, then ray tracing was used
 		// JavaScript does not let the programmer pass values by reference. Only objects are passed by reference
 		// So ray should actually be a boolean passed by reference to the function detectCollisionPoint
 		if ( detectCollisionPoint(queue[0],queue[i],collision,ray={"val":null}) === true ){
 		    t  = timeUntilPoint(queue[0],collision); // Calculates the time it will take our aircraft to reach the collision point
 		    t2 = timeUntilPoint(queue[i],collision);
-		    closeness = ray.val ? rayTracingDetection : nonRayTracingDetection;  
+		    closeness = ray.val ? rayTracingDetection+(10*Math.exp(-queue[i].getVelocity()[0])) : nonRayTracingDetection;  
+		    $("#display").html(t-t2+"<br/>"+closeness);
 		    if ( Math.abs(t-t2) < closeness && ( t >= 0 || t2 >= 0 ) ){
 			// Draw the detection point
 			cx.beginPath();
-			cx.rect(collision[0]-5,collision[1]-5,10,10);
+			cx.rect((collision[0])-5,height-(collision[1])-5,10,10);
 			cx.strokeStyle="#0f0";
 			cx.stroke();
 			cx.closePath();
 			// Set the obstacle to a red color
 			queue[i].setColor("#f00");
 			// Calculate a new trajectory around the obstacle
-			collision[1]+=10;
+			collision[1] += avoidBy + queue[i].getRadius();
+			collision[0]  = queue[i].getPosition()[0]+queue[i].getRadius()*2;
 			// This function will be changed to adjust how quickly our aircraft should ascend
 			queue[0].newTrajectory(collision,Math.abs(t-t2));
 		    }
@@ -90,7 +96,7 @@ function update(){
 		}
 	    }
 	    else {
-		draw(queue[0].getPosition(),queue[0].getRadius(),"#000",tracker);
+		draw(queue[0].getPosition(),2,"#000",tracker);
 	    }
 	}
     }
@@ -126,17 +132,19 @@ $(document).ready(function(){
     })[0].getContext('2d');
 
     queue.push(new Aircraft());
-    queue[0].setRadius(aircraft_radius);
-    queue[0].setPosition(aircraft_position);
-    queue[0].setVelocity(aircraft_velocity);
+    queue[0].setRadius(aircraft_radius*pxPerMeter);
+    queue[0].setPosition([aircraft_position[0]*pxPerMeter,aircraft_position[1]*pxPerMeter,aircraft_position[2]*pxPerMeter]);
+    queue[0].setVelocity([aircraft_velocity[0]*pxPerMeter/60,aircraft_velocity[1]*pxPerMeter/60,aircraft_velocity[2]*pxPerMeter/60]);
+    queue[0].setDefaultY(30*pxPerMeter);
+    avoidBy *= pxPerMeter;
     // Create the obstacles
     var index = 0;
     for ( var i = 0; i < num_obstacles; i++ ){
 	queue.push(new Aircraft());
 	index = queue.length-1;
-	queue[index].setPosition(obstacle_position);
-	queue[index].setVelocity(obstacle_velocity);
-	queue[index].setRadius(obstacle_radius+aircraft_radius);
+	queue[index].setPosition([obstacle_position[0]*pxPerMeter,obstacle_position[1]*pxPerMeter,obstacle_position[2]*pxPerMeter]);
+	queue[index].setVelocity([obstacle_velocity[0]*pxPerMeter/60,obstacle_velocity[1]*pxPerMeter/60,obstacle_velocity[2]*pxPerMeter/60]);
+	queue[index].setRadius(obstacle_radius*pxPerMeter+aircraft_radius*pxPerMeter);
 	queue[index].setColor("#00f");
     }
     $("#field").click(function(){
