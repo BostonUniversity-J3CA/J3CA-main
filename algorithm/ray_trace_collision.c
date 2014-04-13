@@ -1,55 +1,40 @@
-#include <stdio.h>
-#include <math.h>
+#ifndef RAY_TRACE_COLLISION_C
+#define RAY_TRACE_COLLISION_C
 
-int FALSE = 0;
-int TRUE  = 1;
-
-int ray_trace_collision(double aircraft[],
-			double obstacle[],
-			double collision[]);
-
-int main(){
-  double aircraft[] = {5,0,20,
-		       4,0,20,
-		       6};
-  double obstacle[] = {100,0,20,5};
-  double collision[3];
-
-  int willCollide = ray_trace_collision(aircraft,obstacle,collision);
-  printf("%f,%f,%f\n",collision[0],collision[1],collision[2]);
-  return 0;
-};
-int ray_trace_collision(double aircraft[], 
-			double obstacle[], 
+int ray_trace_collision(double air_pos[],
+			double air_prev[],
+			double air_rad,			
+			double obs_pos[],
+			double obs_rad,
 			double collision[]){
   /**
-   * aircraft - a 7 element array containing: current GPS coordinates,
-   *      it's previous GPS coordinates ( 1 time step before ), and 
-   *      the aircraft's radius
-   * obstacle - a 4 element array containing: current GPS coordinates
-   *      and the obstacle's radius
+   * air_pos - aircraft's current position
+   * air_prev - aircraft's last position (1 timestep before)
+   * air_rad - aircraft's radius
+   * obs_pos - obstacle's current position
+   * obs_rad - the obstacle's radius
    * collision - a 3 element array that will be updated with the
    *      coordinates of a collision
    * This function returns TRUE if a collision is detected and FALSE
    * if no collision will occur. Works solely for a stationary obstacle
    */
   
-  double dlon = aircraft[0] - aircraft[3];
-  double dlat = aircraft[1] - aircraft[4];
-  double dalt = aircraft[2] - aircraft[5];
-  double radius = aircraft[6] + obstacle[3]; // Add the radii of the 
+  double dlon = air_pos[0] - air_prev[0];
+  double dlat = air_pos[1] - air_prev[1];
+  double dalt = air_pos[2] - air_prev[2];
+  double radius = air_rad + obs_rad; // Add the radii of the 
   // aircraft and obstacle
 
   double a = dlon*dlon + dlat*dlat + dalt*dalt;
   double b = 
-    2*dlon*(aircraft[3]-obstacle[0]) + 
-    2*dlat*(aircraft[4]-obstacle[1]) + 
-    2*dalt*(aircraft[5]-obstacle[2]);
+    2*dlon*(air_prev[0]-obs_pos[0]) + 
+    2*dlat*(air_prev[1]-obs_pos[1]) + 
+    2*dalt*(air_prev[2]-obs_pos[2]);
 
   double c = 
-    pow(aircraft[3]-obstacle[0],2.0) + 
-    pow(aircraft[4]-obstacle[1],2.0) + 
-    pow(aircraft[5]-obstacle[2],2.0) - (radius,2.0);
+    pow(air_prev[0]-obs_pos[0],2.0) + 
+    pow(air_prev[1]-obs_pos[1],2.0) + 
+    pow(air_prev[2]-obs_pos[2],2.0) - (radius,2.0);
 
   double discriminant = pow(b,2.0) - 4*a*c;
   double t; // Time of collision
@@ -60,11 +45,13 @@ int ray_trace_collision(double aircraft[],
       t = t1;
     else if ( t2 > 0 )
       t = t2;
-    collision[0] = aircraft[3] + t*dlon;
-    collision[1] = aircraft[4] + t*dlat;
-    collision[2] = aircraft[5] + t*dalt;
+    collision[0] = air_prev[3] + t*dlon;
+    collision[1] = air_prev[4] + t*dlat;
+    collision[2] = air_prev[5] + t*dalt;
     return TRUE;
   }
   else 
     return FALSE;
 };
+
+#endif

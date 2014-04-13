@@ -1,27 +1,5 @@
-#include <stdio.h>
-#include <math.h>
-
-double simple_path(const double our_pos[], const double obsx, 
-		   const double obs_radius, const double target_alt,
-		   const double orig_alt, const double bump_coeff, 
-		   const double avoid_by);
-int main(){
-  double pos[] = {30.0,10.0,20.0};
-  int i;
-  for ( i = 0; i < 40; i++ ){
-    pos[0]++;
-    pos[2]+=simple_path(
-			pos, // our position
-			40,  // obstacle position
-			3,   // obstacle radius
-			30,  // target altitude
-			20,  // original altitude
-			10,  // bump coefficient
-			10   // distance to avoid obstacle by
-			);
-    printf("%f\n",pos[2]);
-  }
-}
+#ifndef SIMPLE_PATH_C
+#define SIMPLE_PATH_C
 double simple_path(const double our_pos[], const double obsx, 
 		   const double obs_radius, const double target_alt,
 		   const double orig_alt, const double bump_coeff, 
@@ -50,3 +28,4 @@ double simple_path(const double our_pos[], const double obsx,
   }
   return 0.0;
 }
+#endif
