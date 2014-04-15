@@ -1,5 +1,6 @@
 #ifndef RAY_TRACE_COLLISION_C
 #define RAY_TRACE_COLLISION_C
+#include <math.h>
 
 int ray_trace_collision(double air_pos[],
 			double air_prev[],

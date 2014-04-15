@@ -1,5 +1,6 @@
 #ifndef SIMPLE_PATH_C
 #define SIMPLE_PATH_C
+#include <math.h>
 double simple_path(const double our_pos[], const double obsx, 
 		   const double obs_radius, const double target_alt,
 		   const double orig_alt, const double bump_coeff, 

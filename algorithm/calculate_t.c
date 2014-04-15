@@ -1,5 +1,6 @@
 ﻿#ifndef CALCULATE_T_H
 #define CALCULATE_T_H
+#include <math.h>
 double calculate_t(const double air_pos[],
 		   const double air_vel[],
 		   const double air_rad,
