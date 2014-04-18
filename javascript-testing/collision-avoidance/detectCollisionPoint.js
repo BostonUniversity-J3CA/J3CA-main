@@ -1,5 +1,10 @@
 /* bool */function detectCollisionPoint(/*Aircraft*/obj1, /*Aircraft*/obj2, /*int []*/ collisionPoint,ray){
     var t = calculateT(obj1,obj2);
+    console.log(obj1.getPosition(),
+		obj1.getVelocity(),
+		obj2.getPosition(),
+		obj2.getVelocity(),
+		t);
     if ( isNaN(t) ){
 	// Collision may occur in head on. For some reason,
 	// it doesn't recognize a head on collision as a collision, so we'll have to manually check

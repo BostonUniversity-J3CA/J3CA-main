@@ -7,8 +7,8 @@ var height     = screen.height; // meters
 // PLEASE NOTE: currently the drawing area is set up using the default JavaScript settings. This means that the canvas is inverted: the origin is
 // the top left corner of the screen, and positive y moves down the screen. Position x still moves to the right
 var num_obstacles = 1;
-var obstacle_position = [rand(25,75),0,0]; // [x,y,z] ( in meters )
-var obstacle_velocity = [rand(-15,15),rand(0,20),0]; // [vx,vy,vz] ( in meters per second )
+var obstacle_position = [rand(50,100),rand(0,10),0]; // [x,y,z] ( in meters )
+var obstacle_velocity = [rand(-20,-8),rand(0,20),0]; // [vx,vy,vz] ( in meters per second )
 var obstacle_radius   = rand(0.5,3);
 var aircraft_radius   = 0.5; // meters
 var aircraft_position = [0,30,0];
@@ -18,9 +18,23 @@ var bumpCoeff         = 10; // A coefficient for the bump function that determin
 // NOTE: The program assumes that our aircraft is a point to make calculations easier. Which means that it makes each obstacle's radius = 
 // obstacle_radius + aircraft_radius
 
+// Let's log all of the information
+console.log(info = {
+    "number of obstacles" : num_obstacles,
+    "obstacle position" : obstacle_position,
+    "obstacle velocity" : obstacle_velocity,
+    "obstacle radius" : obstacle_radius,
+    "aircraft radius" : aircraft_radius,
+    "aircraft position" : aircraft_position,
+    "aircraft velocity" : aircraft_velocity,
+    "avoid distance" : avoidBy,
+    "bump coefficient" : bumpCoeff
+});
+
 // Detection range variables ( in seconds )
 var rayTracingDetection    = 100; // Detection range for when ray tracing is used
 var nonRayTracingDetection = 30;  // Detection range for when ray tracing is NOT used
+var detectionDistance      = 50;
 
 // Please do not touch these variables!
 var tracker = null;
