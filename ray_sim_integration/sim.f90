@@ -93,7 +93,7 @@ end interface
 open(unit = 1, file = "sim.dat")
 1001 format(f8.2,T10,f8.2,T20,f8.2,T30,f8.2,T40,f8.2,T50,f8.2, T60, f8.2, T70, f8.2, T80, f8.2, T90, f8.2, T100, f8.2)
 call init_random_seed()
-write(1,*) "vx vy vxbody vybody x y omega pitch alpha"
+write(1,*) "vx vy gpsx gpsy throttle ycommand x y omega pitch alpha"
 do while (time<endtime)
 	time = time + dt
 	if (mod(counting*gpsupdate, nint(1/dt)) == 0) then
