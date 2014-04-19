@@ -22,14 +22,16 @@ double precision, parameter :: m=1.0256D0
 double precision :: moment
 !aircraft velocity, body frame
 double precision :: vxbody, vybody
-!aircraft velocity, inertial frame: horizontal/vertical
-double precision :: vx = 10D0, vy = 0D0
+!aircraft velocity, inertial frame: horizontal/vertical (vx will be set by input)
+double precision :: vx, vy = 0D0
 !aircraft pitch
 double precision :: pitch=1D-1
 !pitch angular velocity and acceleration
 double precision :: omega=0, omegadot=0
 !moment of inertia (kg*m**2)
 double precision :: I = .06
+!accelerations
+double precision :: ax=0, ay=0, a=0
 !distance: horizontal/vertical, gps readings
 double precision :: x=0, y=0, gpsx=0, gpsy=0, gpsv=0
 !desired altitude, altitude derivative
@@ -40,12 +42,14 @@ double precision :: filterx=0, filtery=0, filter=.95
 double precision :: rand
 !counting value
 integer :: counting=0
+!distance to obstacle, velocity setpoint (inputs)
+double precision :: obstacleDistance, velocitySetpoint
 interface
-	real(c_double) function getThrottle(velocity) bind(c)
+	real(c_double) function getThrottle(velocity, velocitySetpoint) bind(c)
 		!returns throttle from external c function
 		use iso_c_binding
 		implicit none
-		real (c_double), VALUE :: velocity
+		real (c_double), VALUE :: velocity, velocitySetpoint
 	end function
 	real(c_double) function getElevator(altitude, altcommand, altderiv, pitch, pitchrate) bind(c)
 		!returns throttle from external c function
@@ -53,17 +57,17 @@ interface
 		implicit none
 		real (c_double), VALUE :: altitude, altcommand, altderiv, pitch, pitchrate
 	end function
-	real(c_double) function getHeight(distance) bind(c)
+	real(c_double) function getHeight(distance, obstacleDistance) bind(c)
 		!returns throttle from external c function
 		use iso_c_binding
 		implicit none
-		real (c_double), VALUE :: distance
+		real (c_double), VALUE :: distance, obstacleDistance
 	end function
-	real(c_double) function getHeightDerivative(distance) bind(c)
+	real(c_double) function getHeightDerivative(distance, obstacleDistance) bind(c)
 		!returns throttle from external c function
 		use iso_c_binding
 		implicit none
-		real (c_double), VALUE :: distance
+		real (c_double), VALUE :: distance, obstacleDistance
 	end function
 	double precision function thrust(throttle, velocity)
 		!returns thrust (in N) as a function of throttle (in RPM)
@@ -91,9 +95,12 @@ interface
 	end function
 end interface
 open(unit = 1, file = "sim.dat")
-1001 format(f8.2,T10,f8.2,T20,f8.2,T30,f8.2,T40,f8.2,T50,f8.2, T60, f8.2, T70, f8.2, T80, f8.2, T90, f8.2, T100, f8.2)
+1001 format(f8.2,T10,f8.2,T20,f8.2,T30,f8.2,T40,f8.2,T50,f8.2,T60,f8.2,T70,f8.2,T80,f8.2,T90,f8.2,T100,f8.2,T110,f8.2)
 call init_random_seed()
-write(1,*) "vx vy vxbody vybody x y omega pitch alpha"
+write(1,*) "vx, vy, gpsx, gpsy, throttle, altcommand, x, y, omega*180/pi, pitch*180/pi, alpha*180/pi, a"
+read(*,*) obstacleDistance, velocitySetpoint
+!initialize velocity to velocitySetpoint
+vx = velocitySetpoint
 do while (time<endtime)
 	time = time + dt
 	if (mod(counting*gpsupdate, nint(1/dt)) == 0) then
@@ -105,9 +112,9 @@ do while (time<endtime)
 	end if
 	if (mod(counting*update, nint(1/dt)) == 0) then
 		!get control inputs
-		throttle = getThrottle(gpsv)
-		altcommand = getHeight(gpsx)
-		altderiv = getHeightDerivative(gpsx)
+		throttle = getThrottle(gpsv, velocitySetpoint)
+		altcommand = getHeight(gpsx, obstacleDistance)
+		altderiv = getHeightDerivative(gpsx, obstacleDistance)
 		elevator = getElevator(gpsy, altcommand, altderiv, pitch, omega)
 	end if
 	!calculate body velocities
@@ -117,18 +124,26 @@ do while (time<endtime)
 	alpha = atan(-vy/vx)+pitch
 	!calculate forces
 	if (alpha>(10*pi/180)) then
-		write(*,*) "STALL"
+		!STALL
+		write(*,*) "STALL", obstacleDistance, velocitySetpoint
 		STOP
 	else
 		Cl = liftCoeff(alpha)
+	end if
+	if (sqrt(y**2+(x-obstacleDistance)**2)<5) then
+		!COLLIDE
+		write(*,*) "COLLIDE", obstacleDistance, velocitySetpoint
+		STOP
 	end if
 	L = lift(Cl, sqrt(vxbody**2+vybody**2))
 	D = drag(Cl, sqrt(vxbody**2+vybody**2))
 	T = thrust(throttle, vxbody)
 	moment = pitchElevator(elevator, vxbody)
 	!calculate acceleration, update velocities
-	vx = vx + (T*cos(pitch-Tangle)-D*cos(pitch)-L*sin(pitch))*dt/m
-	vy = vy + (T*sin(pitch-Tangle)-D*sin(pitch)+L*cos(pitch)-g)*dt/m
+	ax=(T*cos(pitch-Tangle)-D*cos(pitch)-L*sin(pitch))/m
+	ay=(T*sin(pitch-Tangle)-D*sin(pitch)+L*cos(pitch)-g)/m
+	vx = vx + ax*dt
+	vy = vy + ay*dt
 	!solve for pitch acceleration, pitch rate, and pitch
 	omegadot = moment/I
 	omega = omega + dt * omegadot
@@ -137,10 +152,13 @@ do while (time<endtime)
 	x = x + vx * dt
 	y = y + vy * dt
 	if (mod(counting*100, nint(1/dt)) == 0) then
+		a=sqrt(ax**2+ay**2)
 		write(1,1001) vx, vy, gpsx, gpsy, throttle, altcommand, x, y, omega*180/pi, pitch*180/pi, alpha*180/pi
 	end if
 	counting = counting + 1
 end do
-write(*,*) vxbody, vybody
-write(*,*) x, y
+!SUCCESS
+write(*,*) "SUCCESS", obstacleDistance, velocitySetpoint 
+!write(*,*) vxbody, vybody
+!write(*,*) x, y
 end program

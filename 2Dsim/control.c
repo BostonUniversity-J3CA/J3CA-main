@@ -3,7 +3,7 @@
 #include <stdio.h>
 #define AVOIDHEIGHT 15.0
 #define AVOIDDISTANCE 25.0
-#define STARTDISTANCE 25.0
+#define STARTDISTANCE (obstacleDistance-AVOIDDISTANCE)
 #define PATHFUNCTION bump
 
 double getelevator(double height, double heightcommand, double heightderivative, double pitch, double pitchrate)
@@ -13,15 +13,15 @@ double elevator = kheightchange*heightderivative+kheight*(height-heightcommand) 
 return elevator;
 }
 
-double getthrottle(double velocity)
+double getthrottle(double velocity, double velocitySetpoint)
 {
-double throttle = kthrottle*(velocity-10);
+double throttle = kthrottle*(velocity-velocitySetpoint);
 return throttle;
 }
 
-double getheight(double distance)
+double getheight(double distance, double obstacleDistance)
 {
-if (distance<25 || distance >75)
+if ( (distance<STARTDISTANCE) || (distance>(STARTDISTANCE+2*AVOIDDISTANCE)) )
 	{return 0;}
 else
 	{
@@ -32,7 +32,7 @@ else
 	}
 }
 
-double getheightderivative(double distance)
+double getheightderivative(double distance, double obstacleDistance)
 {
-return getheight(distance+1)-getheight(distance);
+return getheight(distance+1, obstacleDistance)-getheight(distance, obstacleDistance);
 }
