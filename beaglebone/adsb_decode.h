@@ -40,7 +40,7 @@ float hex_to_int(const char hex[]){
   return sum;
 }
 
-float* adsb_decode(const char adsb[]){
+bool adsb_decode(const char adsb[], float* obs_pos){
   // The function takes an adbs string (character array) and returns a pointer to an array of 3 floats defining the 
   // obstacles latitude, longitude, and altitude position in degrees
   static float obs_pos[3];
