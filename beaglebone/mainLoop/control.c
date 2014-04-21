@@ -13,6 +13,16 @@ double elevator = kheightchange*heightderivative+kheight*(height-heightcommand) 
 return elevator;
 }
 
+double getrudder(double y, double yaw)
+{
+return ky*y + kyaw*yaw;
+}
+
+double getaileron(double roll)
+{
+return kroll*roll;
+}
+
 double getthrottle(double velocity, double velocitySetpoint)
 {
 double throttle = kthrottle*(velocity-velocitySetpoint);
@@ -36,3 +46,4 @@ double getheightderivative(double distance, double obstacleDistance)
 {
 return getheight(distance+1, obstacleDistance)-getheight(distance, obstacleDistance);
 }
+

@@ -31,7 +31,7 @@ double precision :: omega=0, omegadot=0
 !moment of inertia (kg*m**2)
 double precision :: I = .06
 !distance: horizontal/vertical, gps readings
-double precision :: x=0, y=0, gpsx=0, gpsy=0, gpsv=0
+double precision :: x=0, y=0, gpsx=0, gpsy=0, gpsvx=0, gpsvy=0
 !desired altitude, altitude derivative
 double precision :: altcommand, altderiv
 !filtered gps datapoints, filter ratio
@@ -39,6 +39,8 @@ double precision :: filterx=0, filtery=0, filter=.95
 !random number
 double precision :: rand
 !counting value
+double precision :: distance2collision, testDistance2collision
+!distance until airplane collides
 integer :: counting=0
 interface
 	real(c_double) function getThrottle(velocity) bind(c)
@@ -47,23 +49,29 @@ interface
 		implicit none
 		real (c_double), VALUE :: velocity
 	end function
+	real(c_double) function collisionDistance(x, y, obsX, obsY, xvelocity, yvelocity) bind(c)
+		!returns distance until aircraft collides with obstacle
+		use iso_c_binding
+		implicit none
+		real (c_double), VALUE :: x, y, obsX, obsY, xvelocity, yvelocity
+	end function
 	real(c_double) function getElevator(altitude, altcommand, altderiv, pitch, pitchrate) bind(c)
 		!returns throttle from external c function
 		use iso_c_binding
 		implicit none
 		real (c_double), VALUE :: altitude, altcommand, altderiv, pitch, pitchrate
 	end function
-	real(c_double) function getHeight(distance) bind(c)
+	real(c_double) function getHeight(distance, distance2collision) bind(c)
 		!returns throttle from external c function
 		use iso_c_binding
 		implicit none
-		real (c_double), VALUE :: distance
+		real (c_double), VALUE :: distance, distance2collision
 	end function
-	real(c_double) function getHeightDerivative(distance) bind(c)
+	real(c_double) function getHeightDerivative(distance, distance2collision) bind(c)
 		!returns throttle from external c function
 		use iso_c_binding
 		implicit none
-		real (c_double), VALUE :: distance
+		real (c_double), VALUE :: distance, distance2collision
 	end function
 	double precision function thrust(throttle, velocity)
 		!returns thrust (in N) as a function of throttle (in RPM)
@@ -95,19 +103,24 @@ open(unit = 1, file = "sim.dat")
 call init_random_seed()
 write(1,*) "vx vy gpsx gpsy throttle ycommand x y omega pitch alpha"
 do while (time<endtime)
+	testDistance2collision = collisionDistance(gpsx, gpsy, 50d0, 0d0, gpsvx, gpsvy)
+	if (testDistance2collision .NE. 0d0) then
+		distance2collision = testDistance2collision
+	end if
 	time = time + dt
 	if (mod(counting*gpsupdate, nint(1/dt)) == 0) then
 		gpsx = x+3.704*nrand()
 		gpsy = y+3.704*nrand()
-		gpsv = vx+.148148*nrand()
+		gpsvx = vx+.148148*nrand()
+		gpsvy = vy+.148148*nrand()
 		filterx = filter*filterx+(1-filter)*gpsx
 		filtery = filter*filtery+(1-filter)*gpsy
 	end if
 	if (mod(counting*update, nint(1/dt)) == 0) then
 		!get control inputs
-		throttle = getThrottle(gpsv)
-		altcommand = getHeight(gpsx)
-		altderiv = getHeightDerivative(gpsx)
+		throttle = getThrottle(gpsvx)
+		altcommand = getHeight(gpsx, distance2collision)
+		altderiv = getHeightDerivative(gpsx, distance2collision)
 		elevator = getElevator(gpsy, altcommand, altderiv, pitch, omega)
 	end if
 	!calculate body velocities
