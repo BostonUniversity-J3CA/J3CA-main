@@ -51,10 +51,6 @@ private:
 	uint8_t bw_rate;
 	uint8_t mode_config;
 
-
-	uint8_t bandwidth;
-	uint8_t modeConfig;
-
 	int  convertAcceleration(int msb_addr, int lsb_addr);
 	int  writeI2CDeviceByte(char address, char value);
 

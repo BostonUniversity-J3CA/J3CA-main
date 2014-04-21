@@ -31,11 +31,55 @@
 
 #ifndef L3G4200DGYROSCOPE_H_
 #define L3G4200DGYROSCOPE_H_
+#define L3G4200D_I2C_BUFFER 0x40
 
 class L3G4200DGyroscope {
+private:
+	int I2CBus, I2CAddress;
+	char dataBuffer[L3G4200D_I2C_BUFFER];
+
+	int angularRateX;
+	int angularRateY;
+	int angularRateZ;
+	int temperature;
+
+	uint8_t ctrl_reg1;
+	uint8_t ctrl_reg2;
+	uint8_t ctrl_reg3;
+	uint8_t ctrl_reg4;
+	uint8_t ctrl_reg5;
+
+	int  convertAR(int msb_addr, int lsb_addr);
+	int  writeI2CDeviceByte(char address, char value);
+
 public:
-	L3G4200DGyroscope();
+	L3G4200DGyroscope(int bus, int address);
+	void displayMode(int iterations);
+
+	int  readFullSensorState();
+	// The following do physical reads and writes of the sensors
+	int setCTRL_REG1(uint8_t desired);
+	uint8_t getCTRL_REG1();
+	int setCTRL_REG2(uint8_t desired);
+	uint8_t getCTRL_REG2();
+	int setCTRL_REG3(uint8_t desired);
+	uint8_t getCTRL_REG3();
+	int setCTRL_REG4(uint8_t desired);
+    uint8_t getCTRL_REG4();
+    int setCTRL_REG5(uint8_t desired);
+    uint8_t getCTRL_REG5();
+
+	int getAngularRateX() { return angularRateX; }
+	int getAngularRateY() { return angularRateY; }
+	int getAngularRateZ() { return angularRateZ; }
+
 	virtual ~L3G4200DGyroscope();
 };
 
 #endif /* L3G4200DGYROSCOPE_H_ */
+
+
+
+
+
+

@@ -58,9 +58,6 @@ using namespace std;
 #define POWER_CTL   0x2D
 #define BW_RATE 	 0x2C
 
-#define TEMP	  	0x08  //Temperature must be removed for ACC
-
-
 ADX345Accelerometer::ADX345Accelerometer(int bus, int address) {
 	I2CBus = bus;
 	I2CAddress = address;
@@ -138,8 +135,8 @@ void ADX345Accelerometer::displayMode(int iterations){
 uint8_t ADX345Accelerometer::getTIME_FF(){
 	this->readFullSensorState();
 	char temp = dataBuffer[TIME_FF];
-	this->data_format = (uint8_t) temp;
-	return this->data_format;
+	this->time_ff = (uint8_t) temp;
+	return this->time_ff;
 }
 
 int ADX345Accelerometer::setTIME_FF(uint8_t desired){
@@ -168,8 +165,8 @@ int ADX345Accelerometer::setDATA_FORMAT(uint8_t desired){
 uint8_t ADX345Accelerometer::getPOWER_CTL(){
 	this->readFullSensorState();
 	char temp = dataBuffer[POWER_CTL];
-	this->data_format = (uint8_t) temp;
-	return this->data_format;
+	this->power_ctl = (uint8_t) temp;
+	return this->power_ctl;
 }
 
 int ADX345Accelerometer::setPOWER_CTL(uint8_t desired){
@@ -183,8 +180,8 @@ int ADX345Accelerometer::setPOWER_CTL(uint8_t desired){
 uint8_t ADX345Accelerometer::getBW_RATE(){
 	this->readFullSensorState();
 	char temp = dataBuffer[BW_RATE];
-	this->data_format = (uint8_t) temp;
-	return this->data_format;
+	this->bw_rate = (uint8_t) temp;
+	return this->bw_rate;
 }
 
 int ADX345Accelerometer::setBW_RATE(uint8_t desired){
