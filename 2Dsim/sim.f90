@@ -42,8 +42,15 @@ double precision :: filterx=0, filtery=0, filter=.95
 double precision :: rand
 !counting value
 integer :: counting=0
-!distance to obstacle, velocity setpoint (inputs)
-double precision :: obstacleDistance, velocitySetpoint
+!calculated potential point of collision
+double precision :: obstacleDistance
+!INPUTS TO PROGRAM
+!aircraft velocity setpoint
+double precision :: velocitySetpoint
+!position of obstacle
+double precision :: obsX, obsY, obsZ
+!obstacle velocity components
+double precision :: obsVX, obsVY, obsVZ
 interface
 	real(c_double) function getThrottle(velocity, velocitySetpoint) bind(c)
 		!returns throttle from external c function
@@ -94,15 +101,20 @@ interface
 		double precision, intent(in) :: alpha
 	end function
 end interface
-open(unit = 1, file = "sim.dat")
+!open(unit = 1, file = "sim.dat")
+1002 format(a8,T10,a8,T20,a8,T30,a8,T40,a8,T50,a8,T60,a8,T70,a8,T80,a8,T90,a8,T100,a8,T110,a8)
 1001 format(f8.2,T10,f8.2,T20,f8.2,T30,f8.2,T40,f8.2,T50,f8.2,T60,f8.2,T70,f8.2,T80,f8.2,T90,f8.2,T100,f8.2,T110,f8.2)
 call init_random_seed()
-write(1,*) "vx, vy, gpsx, gpsy, throttle, altcommand, x, y, omega*180/pi, pitch*180/pi, alpha*180/pi, a"
-read(*,*) obstacleDistance, velocitySetpoint
+!write(1,1002) "vx", "vy", "gpsx", "gpsy", "throttle", "ycomm", "x", "y", "omega", "pitch", "alpha", "acc"
+read(*,*) velocitySetpoint, obsX, obsY, obsZ, obsVX, obsVY, obsVZ
+obstacleDistance = obsX
 !initialize velocity to velocitySetpoint
 vx = velocitySetpoint
 do while (time<endtime)
 	time = time + dt
+	obsX = obsX + obsVX*dt
+	obsY = obsY + obsVY*dt
+	obsZ = obsZ + obsVZ*dt
 	if (mod(counting*gpsupdate, nint(1/dt)) == 0) then
 		gpsx = x+3.704*nrand()
 		gpsy = y+3.704*nrand()
@@ -125,14 +137,14 @@ do while (time<endtime)
 	!calculate forces
 	if (alpha>(10*pi/180)) then
 		!STALL
-		write(*,*) "STALL", obstacleDistance, velocitySetpoint
+		write(*,*) "STALL", obstacleDistance, velocitySetpoint, obsVX
 		STOP
 	else
 		Cl = liftCoeff(alpha)
 	end if
-	if (sqrt(y**2+(x-obstacleDistance)**2)<5) then
+	if (sqrt((y-obsY)**2+(x-obsX)**2+obsZ**2)<5) then
 		!COLLIDE
-		write(*,*) "COLLIDE", obstacleDistance, velocitySetpoint
+		write(*,*) "COLLIDE", obstacleDistance, velocitySetpoint, obsVX
 		STOP
 	end if
 	L = lift(Cl, sqrt(vxbody**2+vybody**2))
@@ -153,12 +165,12 @@ do while (time<endtime)
 	y = y + vy * dt
 	if (mod(counting*100, nint(1/dt)) == 0) then
 		a=sqrt(ax**2+ay**2)
-		write(1,1001) vx, vy, gpsx, gpsy, throttle, altcommand, x, y, omega*180/pi, pitch*180/pi, alpha*180/pi
+		!write(1,1001) vx, vy, gpsx, gpsy, throttle, altcommand, x, y, omega*180/pi, pitch*180/pi, alpha*180/pi, a
 	end if
 	counting = counting + 1
 end do
 !SUCCESS
-write(*,*) "SUCCESS", obstacleDistance, velocitySetpoint 
+write(*,*) "SUCCESS", obstacleDistance, velocitySetpoint, obsVX
 !write(*,*) vxbody, vybody
 !write(*,*) x, y
 end program
