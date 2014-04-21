@@ -1,3 +1,3 @@
-int gpsGET(double& x, double& y, double& z, double& vx, double& vy, double& vz)
+int gpsGET(float& x, float& y, float& z, float& vx, float& vy, float& vz)
 {
 }

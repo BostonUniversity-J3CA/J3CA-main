@@ -5,18 +5,18 @@
 //Each is normalized for domain 0<x<1 and range 0<y<1
 //Called by control.c
 
-double level(double x)
+float level(float x)
 { return 0; }
-double step(double x)
+float step(float x)
 { return 1; }
 
-double linear(double x)
+float linear(float x)
 { return x; }
 
-double sigmoid(double x)
+float sigmoid(float x)
 { return 1.31303528546*(1/(exp(-(4*x-2))+1)-.11920292202);}
 
-double arcs(double x)
+float arcs(float x)
 {
 //Not Done !!!!
 if ( x<.5 )
@@ -25,7 +25,7 @@ else
 	{ return 1; }
 }
 
-double bump(double x)
+float bump(float x)
 {
 x--;
 if ( fabs(x)<1 )

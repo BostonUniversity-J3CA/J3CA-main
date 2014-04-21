@@ -1,4 +1,4 @@
-double obstacleGET()
+float obstacleGET()
 {
 return 50;
 }

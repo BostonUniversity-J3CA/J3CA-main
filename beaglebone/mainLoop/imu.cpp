@@ -1,3 +1,3 @@
-int imuGET(double& pitch, double& roll, double& yaw, double& pitchrate, double& rollrate, double& yawrate)
+int imuGET(float& pitch, float& roll, float& yaw, float& pitchrate, float& rollrate, float& yawrate)
 {
 }
