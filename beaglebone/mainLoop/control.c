@@ -6,30 +6,30 @@
 #define STARTDISTANCE (obstacleDistance-AVOIDDISTANCE)
 #define PATHFUNCTION bump
 
-double getelevator(double height, double heightcommand, double heightderivative, double pitch, double pitchrate)
+float getelevator(float height, float heightcommand, float heightderivative, float pitch, float pitchrate)
 {
 //returns elevator deflection in degrees as a function of pitch in radians
-double elevator = kheightchange*heightderivative+kheight*(height-heightcommand) + kpitch*(pitch-pitch0*3.141592653/180) + kdpitch*pitchrate;
+float elevator = kheightchange*heightderivative+kheight*(height-heightcommand) + kpitch*(pitch-pitch0*3.141592653/180) + kdpitch*pitchrate;
 return elevator;
 }
 
-double getrudder(double y, double yaw)
+float getrudder(float y, float yaw)
 {
 return ky*y + kyaw*yaw;
 }
 
-double getaileron(double roll)
+float getaileron(float roll)
 {
 return kroll*roll;
 }
 
-double getthrottle(double velocity, double velocitySetpoint)
+float getthrottle(float velocity, float velocitySetpoint)
 {
-double throttle = kthrottle*(velocity-velocitySetpoint);
+float throttle = kthrottle*(velocity-velocitySetpoint);
 return throttle;
 }
 
-double getheight(double distance, double obstacleDistance)
+float getheight(float distance, float obstacleDistance)
 {
 if ( (distance<STARTDISTANCE) || (distance>(STARTDISTANCE+2*AVOIDDISTANCE)) )
 	{return 0;}
@@ -42,7 +42,7 @@ else
 	}
 }
 
-double getheightderivative(double distance, double obstacleDistance)
+float getheightderivative(float distance, float obstacleDistance)
 {
 return getheight(distance+1, obstacleDistance)-getheight(distance, obstacleDistance);
 }
