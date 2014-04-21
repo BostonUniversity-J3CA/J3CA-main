@@ -7,8 +7,8 @@ function simple_path_sigmoid(x,y,targetX,targetY,finalY,t){
 	return -finalY/((finalY*0.75)+Math.exp(t));
     }
 }
-function simple_path(x,y,targetX,targetY,finalY){
-    if ( x < targetX ){
+function simple_path(x,y,targetX,targetY,finalY,detectionDistance){
+    if ( Math.abs(x - queue[1].getPosition()[0]) < detectionDistance*pxPerMeter ){
 	if ( y < targetY ){
 	    return Math.exp(-targetY/(targetY*bumpCoeff));
 	}
@@ -17,7 +17,7 @@ function simple_path(x,y,targetX,targetY,finalY){
 	}
     }
     else {
-	if ( y > finalY && (queue[0].getPosition()[0] - (queue[1].getPosition()[0]+queue[1].getRadius())) > 5*pxPerMeter ){
+	if ( y > finalY ){
 	    return -Math.exp(-finalY/(finalY*bumpCoeff));
 	}
 	else {

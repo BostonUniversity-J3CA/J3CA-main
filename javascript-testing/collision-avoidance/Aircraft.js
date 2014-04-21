@@ -21,7 +21,7 @@ function Aircraft(){
     function bump(){
 	prevPosition = position.slice();
 	position[0] += velocity[0];
-	var add = simple_path(position[0],position[1],point[0],point[1],defaultY);
+	var add = simple_path(position[0],position[1],point[0],point[1],defaultY,detectionDistance);
 	position[1] += add;
 	position[2] += velocity[2];
 	if ( position[0] >= point[0] ){
