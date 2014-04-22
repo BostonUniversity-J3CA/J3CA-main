@@ -3,15 +3,15 @@
 #include "readGPS.h"
 
 int main(int argc, char *argv[]){
-  char buffer[150];
-  buffer[0] = 0;
+  char buffer[76];
+  char output[76];
   int count = 0;
 
-  while ( count < 150 ){
-    printf("reading...\n");
+  while ( count < 50 && strlen(output) < 75 ){
     readGPS(buffer,"/dev/ttyUSB0");
+    strcat(output,buffer);
     count++;
   }
-  printf("%s\n",buffer);
+  printf("%s\n",output);
   return 0;
 }
