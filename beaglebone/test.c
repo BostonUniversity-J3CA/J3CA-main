@@ -1,11 +1,17 @@
 #include <stdio.h>
-#include <math.h>
-#include "adsb_decode.h"
+#include <string.h>
+#include "readGPS.h"
 
 int main(int argc, char *argv[]){
-  char   adsb[] = {"fa 01 02 0e eb 37 df ff ff ff ff ff ff ff ff 4d 00 e8"};
-  double pos[3];
-  adsb_decode(adsb,pos);
-  printf("%f\n%f\n%f\n",pos[0],pos[1],pos[2]);
+  char buffer[150];
+  buffer[0] = 0;
+  int count = 0;
+
+  while ( count < 150 ){
+    printf("reading...\n");
+    readGPS(buffer,"/dev/ttyUSB0");
+    count++;
+  }
+  printf("%s\n",buffer);
   return 0;
 }
