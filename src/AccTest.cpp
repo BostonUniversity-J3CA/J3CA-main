@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include "ADX345Accelerometer.h"
 #include "L3G4200DGyroscope.h"
+#include "HMC5883LMagnetometer.h"
 using namespace std;
 
 int main() {
@@ -53,6 +54,20 @@ int main() {
        	Gyroscope.setCTRL_REG5(0x00); //FIFO and interrupt enable
     }
 
+    //Magnetometer Initialization
+    HMC5883LMagnetometer Magnetometer(1,0x1e); //0x1e is the Magnetometer address
+
+    if (Magnetometer.getCONF_REG_A()!=0x08){
+    	Magnetometer.setCONF_REG_A(0x18); //Data Rate and data averaging
+    }
+
+    if (Magnetometer.getCONF_REG_B()!=0x20){
+        	Magnetometer.setCONF_REG_B(0x20); //Gain
+        }
+
+    if (Magnetometer.getMODE_REG()!=0x00){
+        	Magnetometer.setMODE_REG(0x00); //Continious Mode
+        }
 
     sleep(5);
 
