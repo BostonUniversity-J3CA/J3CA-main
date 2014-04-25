@@ -54,7 +54,7 @@ using namespace std;
 
 //Configuration Parameters
 #define TIME_FF     0x29
-#define DATA_FORMAT 0x31  //0x0A
+#define DATA_FORMAT 0x31
 #define POWER_CTL   0x2D
 #define BW_RATE 	 0x2C
 
