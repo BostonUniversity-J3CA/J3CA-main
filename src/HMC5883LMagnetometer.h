@@ -32,7 +32,7 @@
 
 #ifndef HMC5883LMAGNETOMETER_H_
 #define HMC5883LMAGNETOMETER_H_
-#define HMC5883L_I2C_BUFFER 0xFF
+#define HMC5883L_I2C_BUFFER 0x06
 
 class HMC5883LMagnetometer {
 private:
