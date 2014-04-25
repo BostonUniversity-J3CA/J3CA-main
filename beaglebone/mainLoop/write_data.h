@@ -2,11 +2,16 @@
 #define WRITE_DATA_H
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
+#include <stdint.h>
+#include <inttypes.h>
+#include <sstream>
 
 using namespace std;
 
-int write_data(const float time,
+int write_data(const uint64_t time,
+	       const uint64_t dtime,
 	       const char *mode,
 	       const float lon,
 	       const float lat,
@@ -23,10 +28,13 @@ int write_data(const float time,
 	       const int nsat,
 	       const int nobs){
   ofstream file;
+  ostringstream  t, dt;
+  t  << time;
+  dt << dtime;
   file.open("data.dat",fstream::app);
   if ( !file.good() )
     file.open("data.dat");
-  file << time << " " <<  mode << " " <<  lon << " "
+  file << t.str() << " " << dt.str() << " " <<  mode << " " <<  lon << " "
        << lat << " " << alt << " " << roll << " " <<  pitch << " "
        << yaw << " " << acc[0] << " " << acc[1] << " " << acc[2]
        << " " << compass[0] << " " << compass[1] << " " << compass[2]
