@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<head>
+  <title>Collision Avoidance</title>
+  <script type="text/javascript" src="../jquery-1.11.0.min.js"></script>
+  <script type="text/javascript" src="Aircraft.js"></script>
+  <script type="text/javascript" src="calculateT.js"></script>
+  <script type="text/javascript" src="detectCollisionPoint.js"></script>
+  <script type="text/javascript" src="rayTracing.js"></script>
+  <script type="text/javascript" src="paths.js"></script>
+  <script type="text/javascript" src="main.js"></script>
+</head>
+<body style="overflow:hidden">
+  <div id="display" style="position:absolute;top:0;left:0"></div>
+  <canvas id="field" style="border:1px solid #000;position:absolute;left:0;top:0;z-index:2"></canvas>
+  <canvas id="tracker" style="position:absolute;top:0;left:0;border:1px solid #000;z-index:1"></canvas>
+</body>
+</html>
