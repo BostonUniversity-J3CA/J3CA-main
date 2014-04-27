@@ -8,11 +8,10 @@
 #include <stdint.h>
 #include <dirent.h>
 #include <sys/stat.h>
-
-// comment
+#include <sys/ioctl.h>
 
 int open_port(void);
-void storePacket(char *buffer, const int checksum);
+void storePacket(char *buffer);
 void setOptions(int *fd, struct termios *options);
 int stopRead();
 int getFirstDigit(int);
@@ -21,58 +20,55 @@ int lines_written = 100;
 int fc            = -1;
 int folder        = 0;
 
-int main(){
+int main(int argc, char *argv[]){
   int fd = open_port();
   // Set all options
   struct termios options;
-  
+
   printf("Reading data...\n");
   setOptions(&fd, &options);
-  while ( stopRead() == 0 ){
-    // Ready to read!
-    char buffer[32];
-    char packet[16];
-    int  pcount = 0;
-    int  i;
-    
+
+  // Ready to read!
+
+  int  bytes = 0;
+  char buffer[2];
+  int  pcount = 0;
+  char temp[2];
+  char packet[32] = {0};
+  int  checksum = 0;
+  int  begin    = 0;
+  while ( stopRead() == 0 ){    
     // Tracking variables
-    int saved_packets = 0;
-    int n = read(fd,buffer,sizeof(buffer));
-    while ( n > -1 && saved_packets < 20 ) {
-      int checksum = 0;
-      int begin = 0;
-      for (i = 0; i < 32; i++){
-	if ( begin == 0 ){
-	  if ( (buffer[i] & 0xff) == 0xfa )
+    ioctl(fd,FIONREAD,&bytes);
+    
+    if ( bytes > 0 ){
+      if ( read(fd, buffer, sizeof(buffer)) > 0 ){
+	if ( begin == 1 ){
+	  if ( buffer[0] == 0xfa )
 	    begin = 1;
 	}
 	else {
-	  if ( (buffer[i] & 0xff) != 0xfa ){
-	    checksum += buffer[i];
-	    packet[pcount] = buffer[i];	  
-	    pcount++;
-	    if ( pcount == 16 ){
-	      // The packet is full and we haven't reached the delimiter yet...an error has occurred! Discard the packet
-	      pcount = 0;
-	    }
-	  }
-	  else {
-	    // Is this the end of a pack?
-	    if ( pcount < 15 ){
-	      // Nope
-	      packet[pcount] = buffer[i];
-	      pcount++;
+	  checksum += buffer[0];
+	  sprintf(temp,"%x",buffer[0]);
+	  strcat(packet,temp);
+	  strcat(packet," ");
+	  pcount++;
+	  if ( pcount == 16 ){
+	    printf("%s\n",packet);
+	    exit(1);
+	    if ( checksum == 0xff ){
+	      storePacket(packet);
 	    }
 	    else {
-	      storePacket(packet,checksum);
-	      saved_packets++;
-	      pcount = 0;
-	      begin = 0;
+	      printf("checksum error!: %x\n",checksum);
+	      exit(1);
 	    }
-	  }	  
+	    memset(packet,'\0',16);
+	    pcount = 0;
+	    begin = 0;
+	  }
 	}
       }
-      n = read(fd,buffer,sizeof(buffer)); 
     }
   }
   // Close the port
@@ -117,7 +113,7 @@ int stopRead(){
 }
 int open_port(void){
   int fd;
-  fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NDELAY);
+  fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY);
   if ( fd == -1 ){
     perror("open_port: Unable to open /dev/ttyUSB0 \n");
   }
@@ -127,7 +123,7 @@ int open_port(void){
   return fd;
 }
 
-void storePacket(char *buffer, const int checksum){
+void storePacket(char *buffer){
   FILE *fp;
   char fname[50];
   char foldername[50];
@@ -135,7 +131,7 @@ void storePacket(char *buffer, const int checksum){
   if ( lines_written == 100 ){
     fc++;
     lines_written = 0;
-    if ( fc > 99 )
+    if ( fc % 100 == 0 )
       folder = getFirstDigit(fc)*100;
     else
       folder = 0;
@@ -153,17 +149,7 @@ void storePacket(char *buffer, const int checksum){
     printf("Could not open file '%s'\n",fname);
     exit(1);
   }
-  if ( (checksum & 0xff) != 0xff ){
-    // I will log the error properly later
-    char error[22];
-    sprintf(error,"Checksum error:(%x)",checksum & 0xff);
-    //    fwrite(error,1,sizeof(error),fp);
-  }
-  int i;
-  for ( i = 0; i < 16; i++ ){
-    fprintf(fp,"%x ",buffer[i] & 0xFF);
-  }
-  fprintf(fp,"\n");
+  fprintf(fp,"%s\n",buffer);
   lines_written++;
   fclose(fp);
   mode_t perms = 0755;
