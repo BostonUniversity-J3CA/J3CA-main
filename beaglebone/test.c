@@ -8,7 +8,7 @@ int main(int argc, char *argv[]){
   int count = 0;
 
   while ( count < 50 && strlen(output) < 75 ){
-    readGPS(buffer,"/dev/ttyUSB0");
+    readGPS(buffer,"/dev/tty01");
     strcat(output,buffer);
     count++;
   }

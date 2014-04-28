@@ -6,6 +6,8 @@
 #define kheight -1
 #define kheightchange 15
 #define pitch0 2
+#define ipitch 0
+#define iheight 0
 //rudder
 #define ky 0
 #define kyaw 0
