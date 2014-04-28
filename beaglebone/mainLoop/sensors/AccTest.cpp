@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include "ADX345Accelerometer.h"
 #include "L3G4200DGyroscope.h"
+#include "HMC5883LMagnetometer.h"
 using namespace std;
 
 int main() {
@@ -18,7 +19,7 @@ int main() {
 
 	cout << "Reading Acc data test 11" << endl;
 
-
+    /*
 	//Accelerometer Initialization
 	ADX345Accelerometer Accelerometer(1,0x53); //0x53 is the Accelerometer address
 	if (Accelerometer.getTIME_FF()!=0x14){
@@ -52,10 +53,36 @@ int main() {
     if (Gyroscope.getCTRL_REG5()!=0x00){
        	Gyroscope.setCTRL_REG5(0x00); //FIFO and interrupt enable
     }
+    */
 
+
+    //Magnetometer Initialization
+    HMC5883LMagnetometer Magnetometer(1,0x1e); //0x1e is the Magnetometer address
+
+    if (Magnetometer.getCONF_REG_A()!=0x18){
+    	Magnetometer.setCONF_REG_A(0x18); //Data Rate and data averaging
+    }
+
+    if (Magnetometer.getCONF_REG_B()!=0x20){
+        	Magnetometer.setCONF_REG_B(0x20); //Gain
+        }
+
+    if (Magnetometer.getMODE_REG()!=0x00){
+        	Magnetometer.setMODE_REG(0x00); //Continious Mode
+        }
 
     sleep(5);
 
+
+    while(1){
+        		Magnetometer.readFullSensorState();
+        		int x = Magnetometer.getGaussX();
+        		int y = Magnetometer.getGaussY();
+        		int z = Magnetometer.getGaussZ();
+        		cout << x << "," << y << "," << z << endl;
+        }
+
+    /* Gyro test
     while(1){
     		Gyroscope.readFullSensorState();
     		int x = Gyroscope.getAngularRateX();
@@ -63,6 +90,7 @@ int main() {
     		int z = Gyroscope.getAngularRateZ();
     		cout << x << "," << y << "," << z << endl;
     }
+    */
 
 
     /* ACC test

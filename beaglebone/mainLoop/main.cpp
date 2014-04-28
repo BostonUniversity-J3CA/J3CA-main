@@ -129,9 +129,6 @@ int main(){
     pitchrate = gyrData[1];
     rollrate = gyrData[0];
     yawrate = gyrData[2];
-    //read adsb string, get obstacle position
-    //get orientation and rates
-    imuGET(pitch, roll, yaw, pitchrate, rollrate, yawrate);
     //get desired output (code from simulation)
     heightcommand = getheight(x, obstacleXYZ[0]);
     heightderivative = getheightderivative(x, obstacleXYZ[0]);

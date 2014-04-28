@@ -33,7 +33,7 @@
 
 #ifndef ADX345ACCELEROMETER_H_
 #define ADX345ACCELEROMETER_H_
-#define ADX345_I2C_BUFFER 0xFF
+#define ADX345_I2C_BUFFER 0x40
 
 class ADX345Accelerometer {
 

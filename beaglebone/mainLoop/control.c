@@ -9,10 +9,10 @@
 float getelevator(float height, float heightcommand, float heightderivative, float pitch, float pitchrate)
 {
 //returns elevator deflection in degrees as a function of pitch in radians
-static float heightint = 0
+static float heightint = 0;
 float heighterror = (height-heightcommand);
 heightint += heighterror;
-static float pitchint = 0
+static float pitchint = 0;
 float pitcherror = (pitch-pitch0);
 pitchint += pitcherror;
 float elevator = kheightchange*heightderivative
