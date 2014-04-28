@@ -2,35 +2,18 @@
 #define WRITE_DATA_H
 
 #include <iostream>
-#include <iomanip>
 #include <fstream>
-#include <stdint.h>
-#include <inttypes.h>
-#include <sstream>
-#include <unistd.h>
 
 using namespace std;
 
-void make_file_name(){
-	// Find the next file name to use
-	int i = 1;
-	sprintf(fname,"/home/ubuntu/dataFiles/data%d.dat",i);
-	while ( 	access(fname,F_OK) != -1 ){
-	  i++;
-	  sprintf(fname,"/home/ubuntu/dataFiles/data%d.dat",i);
-	}
-}
-
-
-int write_data(const uint64_t time,
-	       const uint64_t dtime,
+int write_data(const int time,
 	       const char *mode,
-	       const float lon,
-	       const float lat,
-	       const float alt,
-	       const float roll,
-	       const float pitch,
-	       const float yaw,
+	       const int lon,
+	       const int lat,
+	       const int alt,
+	       const double roll,
+	       const double pitch,
+	       const double yaw,
 	       const int acc[],
 	       const int compass[],
 	       const int gyro[],
@@ -40,18 +23,17 @@ int write_data(const uint64_t time,
 	       const int nsat,
 	       const int nobs){
   ofstream file;
-  ostringstream  t, dt;
-  t  << time;
-  dt << dtime;
-  //file.open(fname,fstream::app);
-  file << t.str() << " " << dt.str() << " " <<  mode << " " <<  lon << " "
+  file.open("data.dat",fstream::app);
+  if ( !file.good() )
+    file.open("data.dat");
+  file << time << " " <<  mode << " " <<  lon << " "
        << lat << " " << alt << " " << roll << " " <<  pitch << " "
        << yaw << " " << acc[0] << " " << acc[1] << " " << acc[2]
        << " " << compass[0] << " " << compass[1] << " " << compass[2]
        << " " << gyro[0] << " " << gyro[1] << " " << gyro[2] << temp
        << " " << pressure << " " << gps_fix << " " << nsat << " "
        << nobs << endl;
-  //file.close();
+  file.close();
   return 0;
 }
 #endif

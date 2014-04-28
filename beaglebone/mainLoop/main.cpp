@@ -19,6 +19,10 @@ using namespace std;
 
 const int    MANUAL    = 1;
 const int    AUTONOMOUS= 0;
+<<<<<<< HEAD
+char fname[50] = {"/home/ubuntu/dataFiles/data0.dat"};
+=======
+>>>>>>> e4c371248d1cc29f5e75118c8029552e4c1d1449
 const double CHECK_GPS = (1/10)/1000000000; // Check the GPS buffer every 10 times per second
 
 int initialize(ADX345Accelerometer &accelerometer, L3G4200DGyroscope &gyroscope, HMC5883LMagnetometer &Magnetometer){
@@ -63,6 +67,8 @@ int initialize(ADX345Accelerometer &accelerometer, L3G4200DGyroscope &gyroscope,
   }
 }
 int main(){
+  make_file_name(); // Finds the next file to save the data to
+  file.open(fname,fstream::app);
   int flight_type   = MANUAL;
   int flight_number = 0;
   int num_obstacles  = 0;
@@ -101,84 +107,102 @@ int main(){
   float x0=0, y0=0, z0=0;
 
   //zero GPS
+<<<<<<< HEAD
+  string initSentence = "$GPGGA,194459.237,4220.9879,N,07106.3064,W,1,06,1.2,36.6,M,-31.2,M,,0000*59";
+
+  NMEA(initSentence.c_str(),&time, &x0, &y0, &z0, &num_satellites, &fixQuality);
+=======
   string sentence = "$GPGGA,194459.237,4220.9879,N,07106.3064,W,1,06,1.2,36.6,M,-31.2,M,,0000*59";
   NMEA(sentence.c_str(),&time, &x0, &y0, &z0, &num_satellites, &fixQuality);
+>>>>>>> e4c371248d1cc29f5e75118c8029552e4c1d1449
   gettimeofday(&t1,NULL);
   clock_gettime(CLOCK_MONOTONIC,&time_count);
   orig_time = time_count.tv_sec*(uint64_t)1000000000+time_count.tv_nsec;
   while (true){
     //read accelerometer
-    accelerometer.readFullSensorState();
-    accData[0] = accelerometer.getAccelerationX();
-    accData[1] = accelerometer.getAccelerationY();
-    accData[2] = accelerometer.getAccelerationZ();
+    //accelerometer.readFullSensorState();
+    //accData[0] = accelerometer.getAccelerationX();
+    //accData[1] = accelerometer.getAccelerationY();
+    //accData[2] = accelerometer.getAccelerationZ();
     //read gyroscope
-    gyroscope.readFullSensorState();
-    gyrData[0] = gyroscope.getAngularRateX();
-    gyrData[1] = gyroscope.getAngularRateY();
-    gyrData[2] = gyroscope.getAngularRateZ();
+    //gyroscope.readFullSensorState();
+    //gyrData[0] = gyroscope.getAngularRateX();
+    //gyrData[1] = gyroscope.getAngularRateY();
+    //gyrData[2] = gyroscope.getAngularRateZ();
     // read magnetometer
-    Magnetometer.readFullSensorState();
-    compData[0] = Magnetometer.getGaussX();
-    compData[1] = Magnetometer.getGaussY();
-    compData[2] = Magnetometer.getGaussZ();
+    //Magnetometer.readFullSensorState();
+    //compData[0] = Magnetometer.getGaussX();
+    //compData[1] = Magnetometer.getGaussY();
+    //compData[2] = Magnetometer.getGaussZ();
+    
     //combine accelerometer and gyroscope, update pitch roll yaw
-    complementaryFilter(accData, gyrData, &pitch, &roll, &yaw);
+    //complementaryFilter(accData, gyrData, &pitch, &roll, &yaw);
     //    cout << "Pitch:" << pitch << "\tRoll:" << roll << "\n";
     //update pitch roll and yaw rates
-    pitchrate = gyrData[1];
-    rollrate = gyrData[0];
-    yawrate = gyrData[2];
+    //pitchrate = gyrData[1];
+    //rollrate = gyrData[0];
+    //yawrate = gyrData[2];
     //get desired output (code from simulation)
-    heightcommand = getheight(x, obstacleXYZ[0]);
-    heightderivative = getheightderivative(x, obstacleXYZ[0]);
-    elevator = getelevator(-z, heightcommand, heightderivative, pitch, pitchrate);
-    rudder = getrudder(y, yaw); //need constants (set to zero for now)
-    aileron = getaileron(roll); //need constants (set to zero for now)
-    throttle = getthrottle(vx, velocitySetpoint);
+    //heightcommand = getheight(x, obstacleXYZ[0]);
+    //heightderivative = getheightderivative(x, obstacleXYZ[0]);
+    //elevator = getelevator(-z, heightcommand, heightderivative, pitch, pitchrate);
+    //rudder = getrudder(y, yaw); //need constants (set to zero for now)
+    //aileron = getaileron(roll); //need constants (set to zero for now)
+    //throttle = getthrottle(vx, velocitySetpoint);
     //stubs to set outputs
-    setElevator(elevator);
-    setRudder(rudder);
-    setAileron(aileron);
-    setThrottle(throttle);
+    //setElevator(elevator);
+    //setRudder(rudder);
+    //setAileron(aileron);
+    //setThrottle(throttle);
     //	cout << "Elevator: " << elevator << "\tRudder: " << rudder << "\tAileron: " << aileron <<"\tThrottle:"<<throttle<<"\n";
     //	cout << "Acc X: " << accData[0] << "\tAcc Y: " << accData[1] << "\tAcc Z: " << accData[2] << "\n";
     clock_gettime(CLOCK_MONOTONIC,&time_count);
     
     // SEND DATA
-    char f[4];
+    /*char f[4];
     char a[1];
     a[0] = 0xfa;
     write(xbee,a,1);                 // 0xfa
+    cout << a << " ";
     memcpy(a,&flight_type,1);        // Manual (1) or Auto (0)
     write(xbee,a,1);
+    cout << a << " ";
     memcpy(a,&flight_number,1);      // Flight number
     write(xbee,a,1);
+    cout << a << " ";
     memcpy(a,&fixQuality,1);         // GPS Fix Quality
     write(xbee,f,4);
     memcpy(f,&x,4);                  // Longitude
+    cout << f << " ";
     write(xbee,f,4);
     memcpy(f,&y,4);                  // Latitude
     write(xbee,f,4);
+    cout << f << " ";
     memcpy(f,&z,4);                  // Altitude
-    write(xbee,a,1);
+    write(xbee,f,1);
+    cout << f << " ";
     memcpy(a,&num_satellites,1);     // # of Satellites
     write(xbee,a,1);
+    cout << f << " ";
     memcpy(a,&num_obstacles,1);      // # of Obstacles
-
-    /*    write_data(time_count.tv_sec*(uint64_t)1000000000+time_count.tv_nsec,
+    write(xbee,a,1);
+    cout << a << endl;*/
+    printf("%lld\n",time_count.tv_sec*(uint64_t)1000000000+time_count.tv_nsec);
+    /*
+    write_data(time_count.tv_sec*(uint64_t)1000000000+time_count.tv_nsec,
 	       time_count.tv_sec*(uint64_t)1000000000+time_count.tv_nsec-orig_time
 	       ,"m",
 	       x,y,z,
 	       roll,pitch,yaw,
 	       accData,compData,gyrData,
-	       60.7,13.4,fixQuality,num_satellites,0);*/
+	       60.7,13.4,fixQuality,num_satellites,0);
     orig_time = time_count.tv_sec*(uint64_t)1000000000+time_count.tv_nsec;
     gettimeofday(&t2,NULL);
-    if (  t2.tv_sec - t1.tv_sec >= CHECK_GPS ){
+    */
+    //if (  t2.tv_sec - t1.tv_sec >= CHECK_GPS ){
       // Reset the initial time
-      gettimeofday(&t1,NULL);
-      readGPS(fd,&time,&x,&y,&z,&num_satellites,&fixQuality);
-    }
+    //  gettimeofday(&t1,NULL);
+     // readGPS(fd,&time,&x,&y,&z,&num_satellites,&fixQuality);
+    //}
   }
 }
