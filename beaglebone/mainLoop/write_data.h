@@ -10,14 +10,19 @@
 #include <unistd.h>
 
 using namespace std;
+char fname[50] = {"/home/ubuntu/dataFiles/data0.dat"};
+//char fname[80] = {"/home/john/Programs/seniordesign/beaglebone/mainLoop/data0.dat"};
+ofstream file;
 
 void make_file_name(){
 	// Find the next file name to use
 	int i = 1;
 	sprintf(fname,"/home/ubuntu/dataFiles/data%d.dat",i);
+//	sprintf(fname,"/home/john/Programs/seniordesign/beaglebone/mainLoop/data%d.dat",i);
 	while ( 	access(fname,F_OK) != -1 ){
 	  i++;
 	  sprintf(fname,"/home/ubuntu/dataFiles/data%d.dat",i);
+//	  sprintf(fname,"/home/john/Programs/seniordesign/beaglebone/mainLoop/data%d.dat",i);
 	}
 }
 
@@ -39,7 +44,6 @@ int write_data(const uint64_t time,
 	       const int gps_fix,
 	       const int nsat,
 	       const int nobs){
-  ofstream file;
   ostringstream  t, dt;
   t  << time;
   dt << dtime;
