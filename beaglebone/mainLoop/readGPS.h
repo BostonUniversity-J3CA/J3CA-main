@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #define BAUDRATE B115200
 #define MODEMDEVICE "/dev/ttyO1"

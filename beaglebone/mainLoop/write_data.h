@@ -7,9 +7,12 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <sstream>
+#include <unistd.h>
 
 using namespace std;
+char fname[50] = {"/home/ubuntu/dataFiles/data0.dat"};
 
+int lines_written = 0;
 int write_data(const uint64_t time,
 	       const uint64_t dtime,
 	       const char *mode,
@@ -31,9 +34,17 @@ int write_data(const uint64_t time,
   ostringstream  t, dt;
   t  << time;
   dt << dtime;
-  file.open("data.dat",fstream::app);
-  if ( !file.good() )
-    file.open("data.dat");
+  if ( lines_written >= 100 ){
+    // Find the next file name to use
+    int i = 1;
+    sprintf(fname,"/home/ubuntu/dataFiles/data%d.dat",i);
+    while ( access(fname,F_OK) != -1 ){
+      i++;
+      sprintf(fname,"/home/ubuntu/dataFiles/data%d.dat",i);
+    }
+    lines_written=0;
+  }
+  file.open(fname,fstream::app);
   file << t.str() << " " << dt.str() << " " <<  mode << " " <<  lon << " "
        << lat << " " << alt << " " << roll << " " <<  pitch << " "
        << yaw << " " << acc[0] << " " << acc[1] << " " << acc[2]
@@ -42,6 +53,7 @@ int write_data(const uint64_t time,
        << " " << pressure << " " << gps_fix << " " << nsat << " "
        << nobs << endl;
   file.close();
+  lines_written++;
   return 0;
 }
 #endif

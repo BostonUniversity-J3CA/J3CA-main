@@ -3,12 +3,13 @@
 #include "complementary.c"
 #include "gpsparse.c"
 #include "imu.cpp"
-#include "../adsb_decode.h"
 #include "./sensors/ADX345Accelerometer.cpp"
 #include "./sensors/L3G4200DGyroscope.cpp"
 #include "./sensors/HMC5883LMagnetometer.cpp"
+#include "../adsb_decode.h"
 #include "write_data.h"
 #include "readGPS.h"
+#include "serial_write.h"
 #include <sys/time.h>
 #include <iostream>
 #include <string>
@@ -16,6 +17,9 @@
 #include <fstream>
 using namespace std;
 
+
+const int    MANUAL    = 1;
+const int    AUTONOMOUS= 0;
 const double CHECK_GPS = (1/10); // Check the GPS buffer every 10 times per second
 
 int initialize(ADX345Accelerometer &accelerometer, L3G4200DGyroscope &gyroscope, HMC5883LMagnetometer &Magnetometer){
@@ -59,8 +63,12 @@ int initialize(ADX345Accelerometer &accelerometer, L3G4200DGyroscope &gyroscope,
     Magnetometer.setMODE_REG(0x00); //Continious Mode
   }
 }
-
 int main(){
+  int flight_type   = MANUAL;
+  int flight_number = 0;
+  int num_obstacles  = 0;
+  char xbee_port[]  = {"/dev/ttyO4"};
+  char data_buf[20] = {'\0'};
   // Clear data.dat
   ofstream fp;
   fp.open("data.dat",fstream::out | fstream::trunc);
@@ -68,7 +76,8 @@ int main(){
 
   struct timespec time_count;
   struct termios newtio;
-  int fd = openGPS(&newtio);
+  int fd   = openGPS(&newtio);
+  int xbee = open_port(xbee_port);
   uint64_t orig_time;
   struct timeval t1,t2;
   float velocitySetpoint = 10; //intended speed of aircraft
@@ -88,20 +97,17 @@ int main(){
   int gyrData[3] = {0,0,0};
   int compData[3]= {0,0,0};
   float time;
-  int numSatellites, fixQuality;
+  int num_satellites, fixQuality;
   string nmeaSentence;
   float x0=0, y0=0, z0=0;
+
   //zero GPS
   NMEA("$GPGGA,194459.237,4220.9879,N,07106.3064,W,1,06,1.2,36.6,M,-31.2,M,,0000*59",
-       &time, &x0, &y0, &z0, &numSatellites, &fixQuality);
+       &time, &x0, &y0, &z0, &num_satellites, &fixQuality);
   gettimeofday(&t1,NULL);
   clock_gettime(CLOCK_MONOTONIC,&time_count);
   orig_time = time_count.tv_sec*(uint64_t)1000000000+time_count.tv_nsec;
   while (true){
-    //read GPS
-    //nmeaSentence = "$GPGGA,194459.236,4220.9878,N,07106.3063,W,1,06,1.2,36.5,M,-31.2,M,,0000*59";
-    //NMEA(nmeaSentence.c_str(), &time, &x, &y, &z, &numSatellites, &fixQuality);
-    cout << (x-x0) << "\t" << (y-y0) << "\t" << (z-z0) << "\n";
     //read accelerometer
     accelerometer.readFullSensorState();
     accData[0] = accelerometer.getAccelerationX();
@@ -119,14 +125,12 @@ int main(){
     compData[2] = Magnetometer.getGaussZ();
     //combine accelerometer and gyroscope, update pitch roll yaw
     complementaryFilter(accData, gyrData, &pitch, &roll, &yaw);
-    cout << "Pitch:" << pitch << "\tRoll:" << roll << "\n";
+    //    cout << "Pitch:" << pitch << "\tRoll:" << roll << "\n";
     //update pitch roll and yaw rates
     pitchrate = gyrData[1];
     rollrate = gyrData[0];
     yawrate = gyrData[2];
     //read adsb string, get obstacle position
-    //adsb_decode("fa 1 2 f8 ee c2 fb 9b 31 86 2 50 d2 95 1 4d 0 e8", obstacleXYZ);
-    //printf("X: %f\tY: %f\tZ: %f\n", obstacleXYZ[0], obstacleXYZ[1], obstacleXYZ[2]);
     //get orientation and rates
     imuGET(pitch, roll, yaw, pitchrate, rollrate, yawrate);
     //get desired output (code from simulation)
@@ -144,19 +148,41 @@ int main(){
     //	cout << "Elevator: " << elevator << "\tRudder: " << rudder << "\tAileron: " << aileron <<"\tThrottle:"<<throttle<<"\n";
     //	cout << "Acc X: " << accData[0] << "\tAcc Y: " << accData[1] << "\tAcc Z: " << accData[2] << "\n";
     clock_gettime(CLOCK_MONOTONIC,&time_count);
-    write_data(time_count.tv_sec*(uint64_t)1000000000+time_count.tv_nsec,
+    
+    // SEND DATA
+    char f[4];
+    char a[1];
+    a[0] = 0xfa;
+    write(xbee,a,1);                 // 0xfa
+    memcpy(a,&flight_type,1);        // Manual (1) or Auto (0)
+    write(xbee,a,1);
+    memcpy(a,&flight_number,1);      // Flight number
+    write(xbee,a,1);
+    memcpy(a,&fixQuality,1);         // GPS Fix Quality
+    write(xbee,f,4);
+    memcpy(f,&x,4);                  // Longitude
+    write(xbee,f,4);
+    memcpy(f,&y,4);                  // Latitude
+    write(xbee,f,4);
+    memcpy(f,&z,4);                  // Altitude
+    write(xbee,a,1);
+    memcpy(a,&num_satellites,1);     // # of Satellites
+    write(xbee,a,1);
+    memcpy(a,&num_obstacles,1);      // # of Obstacles
+
+    /*    write_data(time_count.tv_sec*(uint64_t)1000000000+time_count.tv_nsec,
 	       time_count.tv_sec*(uint64_t)1000000000+time_count.tv_nsec-orig_time
 	       ,"m",
 	       x,y,z,
 	       roll,pitch,yaw,
 	       accData,compData,gyrData,
-	       60.7,13.4,fixQuality,numSatellites,0);
+	       60.7,13.4,fixQuality,num_satellites,0);*/
     orig_time = time_count.tv_sec*(uint64_t)1000000000+time_count.tv_nsec;
     gettimeofday(&t2,NULL);
     if (  t2.tv_sec - t1.tv_sec >= CHECK_GPS ){
       // Reset the initial time
       gettimeofday(&t1,NULL);
-      readGPS(fd,&time,&x,&y,&z,&numSatellites,&fixQuality);
+      readGPS(fd,&time,&x,&y,&z,&num_satellites,&fixQuality);
     }
   }
 }
