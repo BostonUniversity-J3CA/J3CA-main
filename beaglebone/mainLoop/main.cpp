@@ -19,7 +19,7 @@ using namespace std;
 
 const int    MANUAL    = 1;
 const int    AUTONOMOUS= 0;
-const double CHECK_GPS = (1/10); // Check the GPS buffer every 10 times per second
+const double CHECK_GPS = (1/10)/1000000000; // Check the GPS buffer every 10 times per second
 
 int initialize(ADX345Accelerometer &accelerometer, L3G4200DGyroscope &gyroscope, HMC5883LMagnetometer &Magnetometer){
   if (accelerometer.getTIME_FF()!=0x14){
@@ -101,8 +101,8 @@ int main(){
   float x0=0, y0=0, z0=0;
 
   //zero GPS
-  NMEA("$GPGGA,194459.237,4220.9879,N,07106.3064,W,1,06,1.2,36.6,M,-31.2,M,,0000*59",
-       &time, &x0, &y0, &z0, &num_satellites, &fixQuality);
+  string sentence = "$GPGGA,194459.237,4220.9879,N,07106.3064,W,1,06,1.2,36.6,M,-31.2,M,,0000*59";
+  NMEA(sentence.c_str(),&time, &x0, &y0, &z0, &num_satellites, &fixQuality);
   gettimeofday(&t1,NULL);
   clock_gettime(CLOCK_MONOTONIC,&time_count);
   orig_time = time_count.tv_sec*(uint64_t)1000000000+time_count.tv_nsec;
