@@ -15,7 +15,6 @@
 #define TRUE 1
 
 int readGPS(int fd, 
-	    float* time, 
 	    float* latitude, 
 	    float* longitude, 
 	    float* altitude, 
@@ -26,7 +25,7 @@ int readGPS(int fd,
   res = read(fd,buf,255);
   buf[res] = 0;
   if ( strlen(buf) >= 75 ){
-    NMEA(buf,time,latitude,longitude,altitude,numSatellites,fixQuality);
+    NMEA(buf,latitude,longitude,altitude,numSatellites,fixQuality);
     return 1;
   }
   return 0;

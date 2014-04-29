@@ -27,8 +27,8 @@ void make_file_name(){
 }
 
 
-int write_data(const uint64_t time,
-	       const uint64_t dtime,
+int write_data(const int time,
+	       const int dtime,
 	       const char *mode,
 	       const float lon,
 	       const float lat,
