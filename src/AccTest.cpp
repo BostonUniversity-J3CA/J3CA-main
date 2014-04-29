@@ -12,12 +12,40 @@
 #include "ADX345Accelerometer.h"
 #include "L3G4200DGyroscope.h"
 #include "HMC5883LMagnetometer.h"
+#include "BMP085Barometer.h"
+#include "ServoAttach.h"
+//#include "./BMP085Barometer.cpp"
+#include <time.h>
+//#include <ctime>
+#include <stdint.h>
+#include <string>
+#include <fstream>
+#define THROTLE_ADDRESS "/sys/devices/ocp.3/pwm_test_P8_13.11"
+#define AILERON_ADDRESS "/sys/devices/ocp.3/pwm_test_P8_19.12"
+#define ELEVATOR_ADDRESS "/sys/devices/ocp.3/pwm_test_P9_14.13"
+#define RUDDER_ADDRESS "/sys/devices/ocp.3/pwm_test_P8_16.14"
+#define RIGHT_FLAP__ADDRESS "/sys/devices/ocp.3/pwm_test_P8_22.16"
+#define LEFT_FLAP_ADDRESS "/sys/devices/ocp.3/pwm_test_P8_21.15"
+
 using namespace std;
 
 int main() {
 
+	//uint64_t orig_time;
+	//struct timespec time_count;
+	//clock_gettime(CLOCK_MONOTONIC,&time_count);
+	//orig_time = time_count.tv_sec*(uint64_t)1000000000+time_count.tv_nsec;
 
-	cout << "Reading Acc data test 11" << endl;
+	cout << "Servo set test " << endl;
+
+    char addr[64];
+    snprintf(addr, sizeof(addr), "%s" ,AILERON_ADDRESS);
+	ServoAttach Aileron (addr);
+	Aileron.setPeriod(500002);
+
+
+	//BMP085Barometer Barometer(1,0x77);
+	
 
     /*
 	//Accelerometer Initialization
@@ -55,7 +83,7 @@ int main() {
     }
     */
 
-
+    /*
     //Magnetometer Initialization
     HMC5883LMagnetometer Magnetometer(1,0x1e); //0x1e is the Magnetometer address
 
@@ -70,17 +98,20 @@ int main() {
     if (Magnetometer.getMODE_REG()!=0x00){
         	Magnetometer.setMODE_REG(0x00); //Continious Mode
         }
+	*/
 
-    sleep(5);
+    cout << "And we are out" << endl;
 
 
-    while(1){
-        		Magnetometer.readFullSensorState();
-        		int x = Magnetometer.getGaussX();
-        		int y = Magnetometer.getGaussY();
-        		int z = Magnetometer.getGaussZ();
-        		cout << x << "," << y << "," << z << endl;
-        }
+    //while(1){
+                //Barometer.updateCheck(orig_time);
+        		//Magnetometer.readFullSensorState();
+        		//int x = Barometer.getTemperature();
+        		//int y = Barometer.getPressure();
+                //        int z = 0;
+        		//int z = Magnetometer.getGaussZ();
+        		//cout << x << "," << y << "," << z << endl;
+    //     }
 
     /* Gyro test
     while(1){
