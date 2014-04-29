@@ -99,6 +99,7 @@ int main(){
 	int num_satellites, fixQuality;
 	string nmeaSentence;
 	float x0=0, y0=0, z0=0;
+	float distance=0;
 
 	//zero GPS
 	gettimeofday(&tinit,NULL);
@@ -145,8 +146,8 @@ int main(){
 		rollrate = gyrData[0];
 		yawrate = gyrData[2];
 		//get desired output (code from simulation)
-		heightcommand = getheight(x, obstacleXYZ[0]);
-		heightderivative = getheightderivative(x, obstacleXYZ[0]);
+		heightcommand = getheight(distance, obstacleXYZ[0]);
+		heightderivative = getheightderivative(distance, obstacleXYZ[0]);
 		elevator = getelevator(-z, heightcommand, heightderivative, pitch, pitchrate);
 		rudder = getrudder(y, yaw); //need constants (set to zero for now)
 		aileron = getaileron(roll); //need constants (set to zero for now)
@@ -190,7 +191,7 @@ int main(){
 		cout << a << endl;*/
 		tlast=tcurrent;
 		gettimeofday(&tcurrent,NULL);
-		printf("%f m from start\n", (x-x0)*(x-x0)+(y-y0)*(y-y0)+(z-z0)*(z-z0) );
+		printf("%f m from start\n", distance);
 		write_data((tcurrent.tv_sec-tinit.tv_sec)*1000000+(tcurrent.tv_usec-tinit.tv_usec),
 				 (tcurrent.tv_sec-tlast.tv_sec)*1000000+(tcurrent.tv_usec-tlast.tv_usec),
 				 "m", x,y,z,
@@ -201,6 +202,7 @@ int main(){
 			// Reset the initial time
 			tgpsread=tcurrent;
 			readGPS(fd,&x,&y,&z,&num_satellites,&fixQuality);
+			distance = (x-x0)*(x-x0)+(y-y0)*(y-y0)+(z-z0)*(z-z0) ;
 		}
 	}
 }
