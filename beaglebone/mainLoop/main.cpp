@@ -129,7 +129,6 @@ int main(){
     
     //combine accelerometer and gyroscope, update pitch roll yaw
     complementaryFilter(accData, gyrData, &pitch, &roll, &yaw);
-        cout << "Pitch:" << pitch << "\tRoll:" << roll << "\n";
     //update pitch roll and yaw rates
     pitchrate = gyrData[1];
     rollrate = gyrData[0];
@@ -146,6 +145,7 @@ int main(){
     setRudder(rudder);
     setAileron(aileron);
     setThrottle(throttle);
+    //  cout << "Pitch:" << pitch << "\tRoll:" << roll << "\n";
     //	cout << "Elevator: " << elevator << "\tRudder: " << rudder << "\tAileron: " << aileron <<"\tThrottle:"<<throttle<<"\n";
     //	cout << "Acc X: " << accData[0] << "\tAcc Y: " << accData[1] << "\tAcc Z: " << accData[2] << "\n";
     clock_gettime(CLOCK_MONOTONIC,&time_count);
