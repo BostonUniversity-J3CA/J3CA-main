@@ -92,42 +92,76 @@ BMP085Barometer::BMP085Barometer(int bus, int address) {
 //********************************************************************************
 
 int BMP085Barometer::updateCheck(uint64_t time){
-	if (time-this->lastUpdateTemp > 1000000000 && this->waitingForUpdate == false){
+	if (time-this->lastUpdateTemp > 1000000 && this->waitingForUpdate == false){
 		if(this->writeI2CDeviceByte(SEL_BYTE, TEMP_MODE)!=0){
 			cout << "Failure to set selection byte value" << endl;
 			return 1;
 		}
 		this->lastRequestTemp = time;
 		this->waitingForUpdate = true;
+		//cout << "flagggggggggg on" << endl;
 		return 0;
 	}
-	if (time-this->lastUpdateTemp > 1000000000 && this->waitingForUpdate == true && time-this->lastRequestTemp > 4500000){
+	if (time-this->lastUpdateTemp > 1000000 && this->waitingForUpdate == true && time-this->lastRequestTemp > 4500 && time-this->lastRequestTemp < 10000){
 		if(this->readDataBuffers()!=0){
 			cout << "Failure to read the buffers" << endl;
 			return 1;
 		}
-		this->Temperature = convertUnSigned16(DAT_MSB, DAT_LSB);
+		long ut = convertSigned16(DAT_MSB, DAT_LSB);
+		long x1 = (ut-ac6)*ac5/(0x8000);
+		//cout << x1 << endl;
+		long x2 = (mc*0x800)/(x1+this->md);
+		//cout << x2 << endl;
+		this->b5 = 3672;//x1+x2;
+		//cout << b5 << endl;
+		this->Temperature = (this->b5+8)/0x10;
+		//cout << this->Temperature << endl;
+
+
 		this->lastUpdateTemp = time;
 		this->waitingForUpdate = false;
+		//cout << "flagggggggggg off" << endl;
 		return 0;
 	}
-	
+
 	if (this->waitingForUpdate == false){
 		if(this->writeI2CDeviceByte(SEL_BYTE, PRESS_MODE)!=0){
 			cout << "Failure to set selection byte value" << endl;
 			return 1;
 		}
 		this->waitingForUpdate = true;
+		//cout << "flag on" << endl;
 		return 0;
 	}
-	if (time-lastUpdatePressure > 14000000 && this->waitingForUpdate == true){
+	if (time-lastUpdatePressure > 14000 && this->waitingForUpdate == true){
 		if(this->readDataBuffers()!=0){
 			cout << "Failure to read the buffers" << endl;
 			return 1;
 		}
-		this->Pressure = convertPressure(DAT_MSB, DAT_LSB, DAT_XLSB);
+		long up = convertPressure(DAT_MSB, DAT_LSB, DAT_XLSB);
+		long b6 = this->b5-4000;
+		long x1 = (this->b2*(b6*b6/0x1000))/0x800;
+		long x2 = this->ac2*b6/0x800;
+		long x3 = x1+x2;
+		long b3 = ((this->ac1*4+x3)<<2)/4;
+		x1 = this->ac3*b6/0x2000;
+		x2 = (this->b1*(b6*b6/0x1000))/0x10000;
+		x3 = ((x1+x2)+2)/4;
+		unsigned long b4 = this->ac4*(unsigned long)(x3+32768)/0x8000;
+		unsigned long b7 = ((unsigned long)up-b3)*(50000>>2);
+		if(b7<0x80000000){
+			this->Pressure = (b7*2/b4);
+		}
+		else{
+			this->Pressure = (b7/b4)*2;
+		}
+		x1 = (this->Pressure/0x100)*(this->Pressure/0x100);
+		x1 = (x1*3038)/0x10000;
+		x2 = (-7357*this->Pressure)/0x10000;
+		this->Pressure = this->Pressure+(x1+x2+3791)/16;
 		this->lastUpdatePressure = time;
 		this->waitingForUpdate = false;
+		//cout << "flag off" << endl;
 	}
 	
 	return 0;
@@ -169,17 +203,22 @@ int BMP085Barometer::readCalibrationData(){
            printf("Byte %02d is 0x%02x\n", i, dataBuffer[i]);
     }
     cout << "Closing BMA180 I2C sensor state read" << endl;
-        this->ac1 = convertSigned16(0x01, 0x00);
+    this->ac1 = convertSigned16(0x01, 0x00);
+    cout << this->ac1 << endl;
 	this->ac2 = convertSigned16(0x03, 0x02);
 	this->ac3 = convertSigned16(0x05, 0x04);
+	//cout << this->ac3 << endl;
 	this->ac4 = convertUnSigned16(0x07, 0x06);
+	//cout << this->ac4 << endl;
 	this->ac5 = convertUnSigned16(0x09, 0x08);
 	this->ac6 = convertUnSigned16(0x0b, 0x0a);
 	this->b1  = convertSigned16(0x0d, 0x0c);
 	this->b2  = convertSigned16(0x0f, 0x0e);
 	this->mb  = convertSigned16(0x11, 0x010);
 	this->mc  = convertSigned16(0x13, 0x12);
+	cout << this->mc << endl;
 	this->md  = convertSigned16(0x15, 0x14);
+	cout << this->md << endl;
 
     return 0;
 }
@@ -225,12 +264,12 @@ int BMP085Barometer::readDataBuffers(){
 int BMP085Barometer::convertSigned16(int msb_reg_addr, int lsb_reg_addr){
 	short temp = dataBuffer[msb_reg_addr];
 	temp = (temp<<8) | dataBuffer[lsb_reg_addr];
-	temp = ~temp + 1;
+	//temp = ~temp + 1;
 	return temp;
 }
 
-int BMP085Barometer::convertUnSigned16(int msb_reg_addr, int lsb_reg_addr){
-	short temp = dataBuffer[msb_reg_addr];
+unsigned int BMP085Barometer::convertUnSigned16(int msb_reg_addr, int lsb_reg_addr){
+	unsigned short temp = dataBuffer[msb_reg_addr];
 	temp = (temp<<8) | dataBuffer[lsb_reg_addr];
 	return temp;
 }

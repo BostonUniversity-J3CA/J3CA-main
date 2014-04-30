@@ -15,36 +15,38 @@
 #include "BMP085Barometer.h"
 #include "ServoAttach.h"
 //#include "./BMP085Barometer.cpp"
-#include <time.h>
+#include <sys/time.h>
 //#include <ctime>
 #include <stdint.h>
 #include <string>
 #include <fstream>
 #define THROTLE_ADDRESS "/sys/devices/ocp.3/pwm_test_P8_13.11"
-#define AILERON_ADDRESS "/sys/devices/ocp.3/pwm_test_P8_19.12"
-#define ELEVATOR_ADDRESS "/sys/devices/ocp.3/pwm_test_P9_14.13"
-#define RUDDER_ADDRESS "/sys/devices/ocp.3/pwm_test_P8_16.14"
-#define RIGHT_FLAP__ADDRESS "/sys/devices/ocp.3/pwm_test_P8_22.16"
-#define LEFT_FLAP_ADDRESS "/sys/devices/ocp.3/pwm_test_P8_21.15"
+//#define AILERON_ADDRESS "/sys/devices/ocp.3/pwm_test_P8_19.12"
+#define ELEVATOR_ADDRESS "/sys/devices/ocp.3/pwm_test_P9_14.12"
+//#define RUDDER_ADDRESS "/sys/devices/ocp.3/pwm_test_P8_16.14 "
+//#define RIGHT_FLAP__ADDRESS "/sys/devices/ocp.3/pwm_test_P8_22.16"
+//#define LEFT_FLAP_ADDRESS "/sys/devices/ocp.3/pwm_test_P8_21.15"
 
 using namespace std;
 
 int main() {
 
-	//uint64_t orig_time;
-	//struct timespec time_count;
-	//clock_gettime(CLOCK_MONOTONIC,&time_count);
-	//orig_time = time_count.tv_sec*(uint64_t)1000000000+time_count.tv_nsec;
+	uint64_t orig_time;
+	struct timeval time_count;
+	gettimeofday(&time_count,NULL);
+	orig_time = time_count.tv_sec*(uint64_t)1000000+time_count.tv_usec;
 
 	cout << "Servo set test " << endl;
 
-    char addr[64];
-    snprintf(addr, sizeof(addr), "%s" ,AILERON_ADDRESS);
-	ServoAttach Aileron (addr);
-	Aileron.setPeriod(500002);
 
 
-	//BMP085Barometer Barometer(1,0x77);
+	//char addr[64];
+    //snprintf(addr, sizeof(addr), "%s" ,THROTLE_ADDRESS);
+	//ServoAttach Throttle (addr);
+	//Throttle.setPeriod(500002);
+
+
+	BMP085Barometer Barometer(1,0x77);
 	
 
     /*
@@ -103,15 +105,17 @@ int main() {
     cout << "And we are out" << endl;
 
 
-    //while(1){
-                //Barometer.updateCheck(orig_time);
-        		//Magnetometer.readFullSensorState();
-        		//int x = Barometer.getTemperature();
-        		//int y = Barometer.getPressure();
-                //        int z = 0;
-        		//int z = Magnetometer.getGaussZ();
-        		//cout << x << "," << y << "," << z << endl;
-    //     }
+    while(1){
+    	gettimeofday(&time_count,NULL);
+    	orig_time = time_count.tv_sec*(uint64_t)1000000+time_count.tv_usec;
+        Barometer.updateCheck(orig_time);
+        //Magnetometer.readFullSensorState();
+        int x = Barometer.getTemperature();
+        int y = Barometer.getPressure();
+        int z = 0;
+        //int z = Magnetometer.getGaussZ();
+        cout << x << "," << y << "," << z << endl;
+     }
 
     /* Gyro test
     while(1){

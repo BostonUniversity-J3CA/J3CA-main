@@ -55,11 +55,16 @@ private:
 	int16_t mc;
 	int16_t md;
 
-	uint16_t Temperature;
-	uint32_t Pressure;
+	long b5;
+
+
+
+
+	int32_t Temperature;
+	int32_t Pressure;
 
 	int  convertSigned16(int msb_addr, int lsb_addr);
-	int  convertUnSigned16(int msb_addr, int lsb_addr);
+	unsigned int  convertUnSigned16(int msb_addr, int lsb_addr);
 	int32_t  convertPressure(int msb_reg_addr, int lsb_reg_addr,int xlsb_reg_addr);
 	int  writeI2CDeviceByte(char address, char value);
 
