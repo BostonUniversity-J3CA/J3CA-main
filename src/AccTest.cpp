@@ -13,6 +13,7 @@
 #include "L3G4200DGyroscope.h"
 #include "HMC5883LMagnetometer.h"
 #include "BMP085Barometer.h"
+#include "BMP085Barometer.cpp"
 #include "ServoAttach.h"
 //#include "./BMP085Barometer.cpp"
 #include <sys/time.h>

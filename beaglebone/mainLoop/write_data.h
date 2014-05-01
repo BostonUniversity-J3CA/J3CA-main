@@ -52,7 +52,7 @@ int write_data(const int time,
        << lat << " " << alt << " " << roll << " " <<  pitch << " "
        << yaw << " " << acc[0] << " " << acc[1] << " " << acc[2]
        << " " << compass[0] << " " << compass[1] << " " << compass[2]
-       << " " << gyro[0] << " " << gyro[1] << " " << gyro[2] << temp
+       << " " << gyro[0] << " " << gyro[1] << " " << gyro[2] << " "<< temp
        << " " << pressure << " " << gps_fix << " " << nsat << " "
        << nobs << endl;
   //file.close();

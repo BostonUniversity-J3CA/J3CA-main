@@ -1,7 +1,14 @@
 int setElevator(float elevator)
 {
 //Set pwm for the elevator
-int output = (int)(2000000*(elevator+1)/(2)); //convert float (-1 to 1) to int (0 to 2e6)
+int output = (int)(1.5e6+.3e6*elevator/20); //convert float (-20 to 20) to int (1 to 2e6)
+if (output > (int)1.8e6) {
+return (int)1.8e6;
+}
+if (output < (int)1.2e6) {
+return (int)1.2e6;
+}
+return output;
 }
 
 int setRudder(float rudder)

@@ -134,7 +134,6 @@ int main(){
 		tlast = tcurrent;
 		gettimeofday(&tcurrent,NULL);
 	}
-	tgpsread = tlast;
 	//average next 10 for "sea level pressure"
 	sleep(5);
 	long pressure0sum = 0;
@@ -261,6 +260,7 @@ int main(){
 			tgpsread=tcurrent;
 			readGPS(fd,&x,&y,&zgps,&num_satellites,&fixQuality);
 			distance = (x-x0)*(x-x0)+(y-y0)*(y-y0)+(z)*(z) ;
+			printf("%f %f\n", x, y);
 		}
-	}
+:	}
 }

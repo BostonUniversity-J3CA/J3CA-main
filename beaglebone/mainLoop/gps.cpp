@@ -13,5 +13,4 @@ sscanf(nmeaSentence, "$GPGGA,%2f%2f%f,%2f%f,N,%3f%f,W,%d,%d,%*f,%f,M,%*f,M%*s", 
 //*time = 3600*hours+60*minutes+seconds;
 *x = (latitude + latminutes/60)*111080.21226561195; //degrees latitude to m
 *y = (longitude + longminutes/60)*82384.58997499943; //degrees longitude to m
-//printf("Time: %fs\nLatitude: %fN\nLongitude: %fW\nAltitude: %fm\nFixed?: %d\nNumber of satellites: %d\n", time, latitude, longitude, altitude, fixQuality, numSatellites);
 }

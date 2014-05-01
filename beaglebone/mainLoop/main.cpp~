@@ -7,8 +7,6 @@
 #include "./sensors/HMC5883LMagnetometer.cpp"
 #include "./sensors/BMP085Barometer.h"
 #include "./sensors/BMP085Barometer.cpp"
-#include "./sensors/ServoAttach.h"
-#include "./sensors/ServoAttach.cpp"
 #include "../adsb_decode.h"
 #include "write_data.h"
 #include "readGPS.h"
@@ -18,8 +16,6 @@
 #include <string>
 #include <stdint.h>
 #include <fstream>
-#define THROTLE_ADDRESS "/sys/devices/ocp.3/pwm_test_P8_13.11"
-#define ELEVATOR_ADDRESS "/sys/devices/ocp.3/pwm_test_P9_14.12"
 using namespace std;
 
 
@@ -74,7 +70,6 @@ int main(){
 	
 	long pressure0 = 0;
         long pressure;
-        long temperature;
 	int flight_type	 = MANUAL;
 	int flight_number = 0;
 	int num_obstacles	= 0;
@@ -91,7 +86,7 @@ int main(){
 	struct timeval tinit, tlast, tcurrent, tgpsread;
 	float velocitySetpoint = 10; //intended speed of aircraft
 	float obstacleXYZ[3]; //location of obstacle
-	float x=0, y=0, z=0, zgps; //position
+	float x=0, y=0, z=0; //position
 	float vx=0, vy=0, vz=0; //velocities
 	float pitch=0, roll=0, yaw=0; //orientation
 	float pitchrate=0, rollrate=0, yawrate=0; //orientation rates of change
@@ -102,65 +97,24 @@ int main(){
 	L3G4200DGyroscope gyroscope(1,0x69);
 	HMC5883LMagnetometer Magnetometer(1,0x1e); //0x1e is the Magnetometer address
 	BMP085Barometer Barometer(1,0x77);
-        char addr[64];
-        snprintf(addr,sizeof(addr), "%s", THROTLE_ADDRESS);
-        ServoAttach Throttle (addr);
-        Throttle.setPeriod(20000000);
-        Throttle.setDuty(1000000);
-        Throttle.setPolarity(0);
-        snprintf(addr,sizeof(addr),"%s",ELEVATOR_ADDRESS);
-        ServoAttach Elevator(addr);
-        Elevator.setPeriod(20000000);
-        Elevator.setDuty(1500000);
-        Elevator.setPolarity(0);
+        cout << "akdjfhlakdhflak" << endl;
 	initialize(accelerometer, gyroscope, Magnetometer); //initializes accelerometer, etc.
 	int accData[3] = {0,0,0};
 	int gyrData[3] = {0,0,0};
 	int compData[3]= {0,0,0};
 	float time;
-	int num_satellites, fixQuality=0;
+	int num_satellites, fixQuality;
 	string nmeaSentence;
 	float x0=0, y0=0, z0=0;
 	float distance=0;
 
 	//zero GPS
 	gettimeofday(&tinit,NULL);
-	printf("Searching for fix\n");
-	//discard first 500 readings from barometer
-	int success;
-	for (i=0; i<200; i++) {
-		gettimeofday(&tlast,NULL);
-		success = Barometer.updateCheck((uint64_t)(tlast.tv_sec*1000000+tlast.tv_usec));
-		tlast = tcurrent;
-		gettimeofday(&tcurrent,NULL);
-	}
-	tgpsread = tlast;
-	//average next 10 for "sea level pressure"
-	sleep(5);
-	long pressure0sum = 0;
-	for (i=0; i<10000; i++) {
-		success = Barometer.updateCheck((uint64_t)(tlast.tv_sec*1000000+tlast.tv_usec));
-		pressure0 =  Barometer.getPressure();
-		pressure0sum += pressure0;
-		tlast = tcurrent;
-		gettimeofday(&tcurrent,NULL);
-		//printf("Pressure is %ld\n", pressure0);
-	}
-	pressure0sum=0;
-	for (i=0; i<20; i++) {
-		success = Barometer.updateCheck((uint64_t)(tlast.tv_sec*1000000+tlast.tv_usec));
-		pressure0 =  Barometer.getPressure();
-		pressure0sum += pressure0;
-		tlast = tcurrent;
-		gettimeofday(&tcurrent,NULL);
-	}
-	tcurrent = tlast;
-	pressure0 = pressure0sum/20;
-	while (fixQuality<1){
+	/*while (fixQuality<1){
 	readGPS(fd,&x,&y,&z,&num_satellites,&fixQuality);
 	switch (fixQuality){
 			case 0:
-				printf(".");
+				printf("No fix\n");
 				break;
 			case 1:
 				printf("Fix but no WAS\n");
@@ -171,7 +125,24 @@ int main(){
 			default:
 				break;
 		}
+	}*/
+	//discard first 5 readings from barometer
+	for (i=0; i<500; i++) {
+		gettimeofday(&tlast,NULL);
+		Barometer.updateCheck((uint64_t)(tlast.tv_sec*1000000+tlast.tv_usec));
 	}
+	//average next 10 for "sea level pressure"
+	long pressure0sum = 0;
+	for (i=0; i<100; i++) {
+		gettimeofday(&tlast,NULL);
+		Barometer.updateCheck((uint64_t)(tlast.tv_sec*1000000+tlast.tv_usec));
+		pressure0 =  Barometer.getPressure();
+		printf("%ld\n", pressure0);
+		pressure0sum += pressure0;
+	}
+	sleep(5);
+	tcurrent = tlast;
+	pressure0 = pressure0sum/100;
 	x0=x;
 	y0=y;
 	z0=z;
@@ -179,8 +150,8 @@ int main(){
 		//read barometer
 		Barometer.updateCheck((uint64_t)(tlast.tv_sec*1000000+tlast.tv_usec));
 		pressure = Barometer.getPressure();
-                temperature = Barometer.getTemperature();
 		z = 44330*(1-pow(((float)pressure/(float)pressure0),(1./5.255)));
+		printf("Altitude is %f, p is %ld, p0 is %ld\n", z, pressure, pressure0);
 		//read accelerometer
 		accelerometer.readFullSensorState();
 		accData[0] = accelerometer.getAccelerationX();
@@ -194,7 +165,6 @@ int main(){
 		// read magnetometer
 		Magnetometer.readFullSensorState();
 		compData[0] = Magnetometer.getGaussX();
-		//sleep(1);
 		compData[1] = Magnetometer.getGaussY();
 		compData[2] = Magnetometer.getGaussZ();
 		//combine accelerometer and gyroscope, update pitch roll yaw
@@ -211,7 +181,7 @@ int main(){
 		aileron = getaileron(roll); //need constants (set to zero for now)
 		throttle = getthrottle(vx, velocitySetpoint);
 		//stubs to set outputs
-		Elevator.setDuty(setElevator(elevator));
+		setElevator(elevator);
 		setRudder(rudder);
 		setAileron(aileron);
 		setThrottle(throttle);
@@ -252,15 +222,15 @@ int main(){
 //		printf("%f m from start\n", distance);
 		write_data((tcurrent.tv_sec-tinit.tv_sec)*1000000+(tcurrent.tv_usec-tinit.tv_usec),
 				 (tcurrent.tv_sec-tlast.tv_sec)*1000000+(tcurrent.tv_usec-tlast.tv_usec),
-				 "m", (x-x0),(y-y0),z,
+				 "m", x,y,z,
 				 roll,pitch,yaw,
 				 accData,compData,gyrData,
-				 temperature,pressure,fixQuality,num_satellites,0);
+				 60.7,13.4,fixQuality,num_satellites,0);
 		if (	((tcurrent.tv_sec-tgpsread.tv_sec)*1000000+(tcurrent.tv_usec-tgpsread.tv_usec)) >= CHECK_GPS ){
 			// Reset the initial time
 			tgpsread=tcurrent;
-			readGPS(fd,&x,&y,&zgps,&num_satellites,&fixQuality);
-			distance = (x-x0)*(x-x0)+(y-y0)*(y-y0)+(z)*(z) ;
+			readGPS(fd,&x,&y,&z,&num_satellites,&fixQuality);
+			distance = (x-x0)*(x-x0)+(y-y0)*(y-y0)+(z-z0)*(z-z0) ;
 		}
 	}
 }

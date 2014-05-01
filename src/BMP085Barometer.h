@@ -38,10 +38,11 @@ class BMP085Barometer {
 private:
 	int I2CBus, I2CAddress;
 	char dataBuffer[BMP085_I2C_BUFFER];
-    uint64_t lastUpdatePressure;
+        uint64_t lastUpdatePressure;
 	uint64_t lastUpdateTemp;
 	uint64_t lastRequestTemp;
-	bool waitingForUpdate;
+	bool waitingForPresUpdate;
+        bool waitingForTempUpdate;
 
 	int16_t ac1;
 	int16_t ac2;
@@ -57,11 +58,8 @@ private:
 
 	long b5;
 
-
-
-
-	int32_t Temperature;
-	int32_t Pressure;
+	long Temperature;
+	long Pressure;
 
 	int  convertSigned16(int msb_addr, int lsb_addr);
 	unsigned int  convertUnSigned16(int msb_addr, int lsb_addr);
@@ -75,19 +73,9 @@ public:
 	int readCalibrationData();
 	int readDataBuffers();
 	// The following do physical reads and writes of the sensors
-	int setCTRL_REG1(uint8_t desired);
-	uint8_t getCTRL_REG1();
-	int setCTRL_REG2(uint8_t desired);
-	uint8_t getCTRL_REG2();
-	int setCTRL_REG3(uint8_t desired);
-	uint8_t getCTRL_REG3();
-	int setCTRL_REG4(uint8_t desired);
-    uint8_t getCTRL_REG4();
-    int setCTRL_REG5(uint8_t desired);
-    uint8_t getCTRL_REG5();
 
-	int getTemperature() { return Temperature; }
-	int32_t getPressure() { return Pressure; }
+	long getTemperature() { return Temperature; }
+	long getPressure() { return Pressure; }
 
 	virtual ~BMP085Barometer();
 };

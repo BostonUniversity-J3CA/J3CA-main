@@ -1,11 +1,11 @@
 //throttle
 #define kthrottle -10000
 //elevator
-#define kpitch -20.6
-#define kdpitch -5.73
-#define kheight -1
-#define kheightchange 15
-#define pitch0 2
+#define kpitch (40*3.141592653/180)
+#define kdpitch (.573*3.141592653/180)
+#define kheight 0
+#define kheightchange 0
+#define pitch0 3
 #define ipitch 0
 #define iheight 0
 //rudder

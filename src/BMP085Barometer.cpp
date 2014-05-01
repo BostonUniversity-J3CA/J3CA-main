@@ -84,7 +84,12 @@ using namespace std;
 BMP085Barometer::BMP085Barometer(int bus, int address) {
 	I2CBus = bus;
 	I2CAddress = address;
-	readCalibrationData();
+	this->readCalibrationData();
+        this->lastUpdateTemp=0;
+        this->lastUpdatePressure=0;
+        this->lastRequestTemp=0;
+        this->Temperature = 240;
+        this->Pressure = 102650;
 }
 
 //********************************************************************************
@@ -92,52 +97,58 @@ BMP085Barometer::BMP085Barometer(int bus, int address) {
 //********************************************************************************
 
 int BMP085Barometer::updateCheck(uint64_t time){
-	if (time-this->lastUpdateTemp > 1000000 && this->waitingForUpdate == false){
+	if (time-this->lastUpdateTemp > 1000000 && (this->waitingForPresUpdate == false && this->waitingForTempUpdate == false)){
 		if(this->writeI2CDeviceByte(SEL_BYTE, TEMP_MODE)!=0){
 			cout << "Failure to set selection byte value" << endl;
 			return 1;
 		}
 		this->lastRequestTemp = time;
-		this->waitingForUpdate = true;
+		this->waitingForTempUpdate = true;
 		//cout << "flagggggggggg on" << endl;
 		return 0;
 	}
-	if (time-this->lastUpdateTemp > 1000000 && this->waitingForUpdate == true && time-this->lastRequestTemp > 4500 && time-this->lastRequestTemp < 10000){
+	if (time-this->lastUpdateTemp > 1000000 && (this->waitingForTempUpdate == true && this->waitingForPresUpdate == false) && time-this->lastRequestTemp > 10000){
 		if(this->readDataBuffers()!=0){
 			cout << "Failure to read the buffers" << endl;
 			return 1;
 		}
+                long lastTemperature = this->Temperature;
 		long ut = convertSigned16(DAT_MSB, DAT_LSB);
+                //cout << ut << endl;
 		long x1 = (ut-ac6)*ac5/(0x8000);
 		//cout << x1 << endl;
 		long x2 = (mc*0x800)/(x1+this->md);
 		//cout << x2 << endl;
-		this->b5 = 3672;//x1+x2;
+		this->b5 = x1+x2;//3672;//x1+x2;
 		//cout << b5 << endl;
 		this->Temperature = (this->b5+8)/0x10;
-		//cout << this->Temperature << endl;
+                if (abs(lastTemperature-this->Temperature)>1000){
+                	this->Temperature = lastTemperature;
+                }
+                //cout << "flaggggggggggg off" << endl;
+		//cout << this->Temperature << "and pressure" << this->Pressure << endl;
 
 
 		this->lastUpdateTemp = time;
-		this->waitingForUpdate = false;
-		//cout << "flagggggggggg off" << endl;
+		this->waitingForTempUpdate = false;
 		return 0;
 	}
 
-	if (this->waitingForUpdate == false){
+	if (this->waitingForPresUpdate == false && this->waitingForTempUpdate == false){
 		if(this->writeI2CDeviceByte(SEL_BYTE, PRESS_MODE)!=0){
 			cout << "Failure to set selection byte value" << endl;
 			return 1;
 		}
-		this->waitingForUpdate = true;
+		this->waitingForPresUpdate = true;
 		//cout << "flag on" << endl;
 		return 0;
 	}
-	if (time-lastUpdatePressure > 14000 && this->waitingForUpdate == true){
+	if (time-lastUpdatePressure > 30000 && this->waitingForPresUpdate == true && this->waitingForTempUpdate == false){
 		if(this->readDataBuffers()!=0){
 			cout << "Failure to read the buffers" << endl;
 			return 1;
 		}
+                long lastPressure = this-> Pressure;
 		long up = convertPressure(DAT_MSB, DAT_LSB, DAT_XLSB);
 		long b6 = this->b5-4000;
 		long x1 = (this->b2*(b6*b6/0x1000))/0x800;
@@ -159,9 +170,12 @@ int BMP085Barometer::updateCheck(uint64_t time){
 		x1 = (x1*3038)/0x10000;
 		x2 = (-7357*this->Pressure)/0x10000;
 		this->Pressure = this->Pressure+(x1+x2+3791)/16;
+                if(abs(lastPressure-this->Pressure)>10000){
+                	this->Pressure = lastPressure;
+                }
 		this->lastUpdatePressure = time;
-		this->waitingForUpdate = false;
-		//cout << "flag off" << endl;
+		this->waitingForPresUpdate = false;
+		//cout << "flag off" << this->Pressure << endl;
 	}
 	
 	return 0;
@@ -194,31 +208,25 @@ int BMP085Barometer::readCalibrationData(){
     	cout << "Failure to read Byte Stream in readFullSensorState()" << endl;
     }
     close(file);
-
-    if (this->dataBuffer[0x0f]!=0xd3){
-    	cout << "MAJOR FAILURE: DATA WITH BMP085Barometer HAS LOST SYNC!" << endl;
-    }
-    cout << "Number of bytes read was " << bytesRead << "aadfad" << numberBytes << endl;
-    for (int i=0; i<20; i++){
-           printf("Byte %02d is 0x%02x\n", i, dataBuffer[i]);
-    }
-    cout << "Closing BMA180 I2C sensor state read" << endl;
-    this->ac1 = convertSigned16(0x01, 0x00);
-    cout << this->ac1 << endl;
-	this->ac2 = convertSigned16(0x03, 0x02);
-	this->ac3 = convertSigned16(0x05, 0x04);
-	//cout << this->ac3 << endl;
-	this->ac4 = convertUnSigned16(0x07, 0x06);
-	//cout << this->ac4 << endl;
-	this->ac5 = convertUnSigned16(0x09, 0x08);
-	this->ac6 = convertUnSigned16(0x0b, 0x0a);
-	this->b1  = convertSigned16(0x0d, 0x0c);
-	this->b2  = convertSigned16(0x0f, 0x0e);
-	this->mb  = convertSigned16(0x11, 0x010);
-	this->mc  = convertSigned16(0x13, 0x12);
-	cout << this->mc << endl;
-	this->md  = convertSigned16(0x15, 0x14);
-	cout << this->md << endl;
+    //cout << "Number of bytes read was " << bytesRead << "aadfad" << numberBytes << endl;
+    //for (int i=0; i<bytesRead; i++){
+    //       printf("Byte %02d is 0x%02x\n", i, dataBuffer[i]);
+    //}
+    //cout << "Closing BMA180 I2C sensor state read" << endl;
+    this->ac1 = convertSigned16(0x00, 0x01);
+    //cout << this->ac1 << endl;
+    this->ac2 = convertSigned16(0x02, 0x03);
+    this->ac3 = convertSigned16(0x04, 0x05);
+    this->ac4 = convertUnSigned16(0x06, 0x07);
+    this->ac5 = convertUnSigned16(0x08, 0x09);
+    this->ac6 = convertUnSigned16(10, 11);
+    this->b1  = convertSigned16(12, 13);
+    this->b2  = convertSigned16(14, 15);
+    this->mb  = convertSigned16(16, 17);
+    this->mc  = convertSigned16(18, 19);
+    //cout << this->mc << endl;
+    this->md  = convertSigned16(20, 21);
+	//cout << this->md << endl;
 
     return 0;
 }
@@ -229,7 +237,7 @@ int BMP085Barometer::readDataBuffers(){
    	snprintf(namebuf, sizeof(namebuf), "/dev/i2c-%d", I2CBus);
     int file;
     if ((file = open(namebuf, O_RDWR)) < 0){
-            cout << "Failed to open L3G4200DGyroscope Sensor on " << namebuf << " I2C Bus" << endl;
+            cout << "Failed to open BMP085Barometer Sensor on " << namebuf << " I2C Bus" << endl;
             return(1);
     }
     if (ioctl(file, I2C_SLAVE, I2CAddress) < 0){
