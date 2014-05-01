@@ -4,7 +4,7 @@
  *  Created on: Apr 30, 2014
  *      Author: John, L, Gillespie, John R. Aleman, Joseph E. Stone, Chirag Rathod, Ari J. Morse
  *      College of Engineering, Boston University
- *      Notes: Writes data to the Xbee for communicating with the ground control station.
+ *      Notes: Writes data the ADS-B signal to the Xbee for communicating with the ground control station.
  *      Copyright G.R.A.M.S., College of Engineering, Boston University
  *      jaleman@bu.edu, chiragr314@gmail.com, johngillespie27@yahoo.com, jestone@bu.edu, amorse@bu.edu
  *
