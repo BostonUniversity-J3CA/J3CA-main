@@ -123,7 +123,7 @@ int main(){
 	int xbee = open_port(xbee_port);
 	struct timeval tinit, tlast, tcurrent, tgpsread;
 	float velocitySetpoint = 10; //intended speed of aircraft
-	float obstacleXYZ[3]; //location of obstacle
+	float obstacleXYZ[3]={30000,30000,30000}; //location of obstacle
 	float x=0, y=0, z=0, zgps; //position
 	float vx=0, vy=0, vz=0; //velocities
 	float pitch=0, roll=0, yaw=0; //orientation
