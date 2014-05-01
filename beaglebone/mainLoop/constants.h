@@ -2,7 +2,7 @@
  * Constants.h
  *
  *  Created on: Apr 30, 2014
- *      Author: John, L, Gillespie, John R. Aleman, Joseph E. Stone, Chirag Rathod, Ari J. Morse
+ *      Author: John, L. Gillespie, John R. Aleman, Joseph E. Stone, Chirag Rathod, Ari J. Morse
  *      College of Engineering, Boston University
  *      Notes: Contains the PID gains for ease of tunning
  *      Copyright G.R.A.M.S., College of Engineering, Boston University
